@@ -1,0 +1,12 @@
+{
+  "name": "test/composer",
+  "description": "test",
+  "type": "library",
+  "license": "Apache-2.0",
+  "autoload": {
+    "psr-4": {
+      "Test\\Composer\\": "src/"
+    }
+  },
+  "require": {}
+}
