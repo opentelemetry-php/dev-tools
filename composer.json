@@ -24,12 +24,12 @@
     },
     "autoload": {
         "psr-4": {
-            "App\\": "src/"
+            "OpenTelemetry\\DevTools\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "App\\Test\\": "tests/"
+            "OpenTelemetry\\DevTools\\Test\\": "tests/"
         }
     },
     "require-dev": {
