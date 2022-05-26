@@ -42,7 +42,7 @@ return [
     //
     // Note that the **only** effect of choosing `'5.6'` is to infer that functions removed in php 7.0 exist.
     // (See `backward_compatibility_checks` for additional options)
-    'target_php_version' => '7.4',
+    'target_php_version' => null,
 
     // If enabled, missing properties will be created when
     // they are first seen. If false, we'll report an
@@ -318,7 +318,7 @@ return [
 
     // The number of processes to fork off during the analysis
     // phase.
-    'processes' => 1,
+    'processes' => getenv('PHAN_PROCESS_NR') !== false ? (int) getenv('PHAN_PROCESS_NR') : 1,
 
     // List of case-insensitive file extensions supported by Phan.
     // (e.g. `['php', 'html', 'htm']`)
@@ -359,20 +359,7 @@ return [
     // your application should be included in this list.
     'directory_list' => [
         'src',
-        'proto/otel/GPBMetadata',
-        'proto/otel/Opentelemetry',
-        'thrift',
-        'vendor/packaged/thrift',
-        'vendor/composer',
-        'vendor/grpc/grpc/src/lib',
-        'vendor/guzzlehttp',
-        'vendor/psr',
-        'vendor/php-http',
-        'vendor/phan/phan/src/Phan',
-        'vendor/phpunit/phpunit/src',
-        'vendor/promphp/prometheus_client_php/src',
-        'vendor/google/protobuf/src',
-        'vendor/nyholm/dsn/src',
+        'vendor'
     ],
 
     // A list of individual files to include in analysis
