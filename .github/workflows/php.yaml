@@ -9,4 +9,5 @@ on:
 jobs:
   deploy:
     uses: opentelemetry-php/gh-workflows/.github/workflows/php.yml@main
-
+    with:
+      matrix_extension: '["ast", "json"]'
