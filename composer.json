@@ -1,0 +1,38 @@
+{
+    "name": "open-telemetry/php-project",
+    "description": "A project for opentelemetry-php",
+    "type": "library",
+    "license": "Apache-2.0",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": "^7.4 || ^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenTelemetry\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OpenTelemetry\\Test\\": "tests"
+        }
+    },
+    "require-dev": {
+        "open-telemetry/dev-common-metapackage": "dev-main"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "composer dump-autoload --optimize"
+        ],
+        "post-update-cmd": [
+            "composer dump-autoload --optimize"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true
+        }
+    }
+}

@@ -1,0 +1,13 @@
+name: Psalm Security Analysis
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.txt'
+
+jobs:
+  psalm:
+    uses: opentelemetry-php/gh-workflows/workflows/psalm-security-analysis.yml@main
+

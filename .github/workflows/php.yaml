@@ -1,0 +1,11 @@
+name: PHP QA
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    uses: opentelemetry-php/gh-workflows/workflows/php.yaml@main
+
