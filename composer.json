@@ -44,6 +44,9 @@
             "composer dump-autoload --optimize"
         ]
     },
+    "bin": [
+        "bin/otel"
+    ],
     "config": {
         "sort-packages": true,
         "allow-plugins": {
