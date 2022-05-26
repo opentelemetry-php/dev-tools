@@ -1,5 +1,11 @@
+ifneq ("$(wildcard .env)","")
+    include .env
+	export $(.env)
+endif
+
 PHP_VERSION ?= 7.4
 DC_RUN_PHP = docker-compose run --rm php
+PSALM_THREADS ?= 1
 
 all: update style phan psalm phpstan test
 install:
@@ -16,9 +22,9 @@ test-coverage:
 phan:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off env PHAN_DISABLE_XDEBUG_WARN=1 vendor/bin/phan
 psalm:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --threads=1 --no-cache --php-version=${PHP_VERSION}
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --threads=${PSALM_THREADS} --no-cache --php-version=${PHP_VERSION}
 psalm-info:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --show-info=true --threads=1
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --show-info=true --threads=${PSALM_THREADS}
 phpstan:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpstan analyse
 bash:
@@ -27,4 +33,6 @@ style:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no -vvv
 phpmetrics:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpmetrics --config=./phpmetrics.json --junit=junit.xml
+foo:
+	echo $(PHP_VERSION)
 FORCE:

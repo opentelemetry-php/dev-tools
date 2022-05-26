@@ -318,7 +318,7 @@ return [
 
     // The number of processes to fork off during the analysis
     // phase.
-    'processes' => getenv('PHAN_PROCESS_NR') !== false ? (int) getenv('PHAN_PROCESS_NR') : 1,
+    'processes' => getenv('PHAN_PROCESSES') !== false ? (int) getenv('PHAN_PROCESSES') : 1,
 
     // List of case-insensitive file extensions supported by Phan.
     // (e.g. `['php', 'html', 'htm']`)
