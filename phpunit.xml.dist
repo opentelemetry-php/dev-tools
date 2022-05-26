@@ -27,9 +27,6 @@
         <include>
             <directory>src</directory>
         </include>
-        <exclude>
-            <directory suffix=".php">src/Symfony/OtelSdkBundle/Resources</directory>
-        </exclude>
     </coverage>
 
     <php>
