@@ -12,13 +12,14 @@ class GitSplitConfigResolver implements ConfigResolverInterface
 {
     private const SPLITS_KEY = 'splits';
     private const PREFIX_KEY = 'prefix';
+    private const GIT_SPLIT_FILE_NAME = '.gitsplit.yml';
     private const COMPOSER_FILE_NAME = 'composer.json';
 
     private string $configFile;
 
-    public function __construct(string $configFile)
+    public function __construct(string $configFile = null)
     {
-        $this->configFile = $configFile;
+        $this->configFile = $configFile ?? $this->getDefaultConfigPath();
     }
 
     public function resolve(): array
@@ -30,6 +31,11 @@ class GitSplitConfigResolver implements ConfigResolverInterface
         }
 
         return self::resolveComposerFiles($gitSplitConfig);
+    }
+
+    public function getDefaultConfigPath(): string
+    {
+        return sprintf('%s/%s', getcwd() !== false ?  getcwd() : '.', self::GIT_SPLIT_FILE_NAME);
     }
 
     private static function parseGitSplitFile(string $filePath): array

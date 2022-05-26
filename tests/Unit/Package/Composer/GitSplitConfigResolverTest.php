@@ -14,7 +14,8 @@ use PHPUnit\Framework\TestCase;
 class GitSplitConfigResolverTest extends TestCase
 {
     private const ROOT_DIR = 'root';
-    private const GITSPLIT_CONGIG_PATH = self::ROOT_DIR . '/.gitsplit.yml';
+    private const GITSPLIT_FILE = '.gitsplit.yml';
+    private const GITSPLIT_CONFIG_PATH = self::ROOT_DIR . '/' . self::GITSPLIT_FILE;
     private const PACKAGE_PATHS = [
         'A' => 'src/A',
         'B' => 'src/B',
@@ -80,6 +81,16 @@ class GitSplitConfigResolverTest extends TestCase
         ))->resolve();
     }
 
+    public function test_get_default_config_path(): void
+    {
+        $basePath = getcwd() !== false ?  getcwd() : '.';
+
+        $this->assertSame(
+            "$basePath/" . self::GITSPLIT_FILE,
+            (new GitSplitConfigResolver())->getDefaultConfigPath()
+        );
+    }
+
     private function getExpectedResolverResult(): array
     {
         $result = [];
@@ -96,7 +107,7 @@ class GitSplitConfigResolverTest extends TestCase
 
     private function getConfigFile(string $content): vfsStreamFile
     {
-        return vfsStream::newFile(self::GITSPLIT_CONGIG_PATH)
+        return vfsStream::newFile(self::GITSPLIT_CONFIG_PATH)
             ->withContent($content)
             ->at($this->root);
     }
