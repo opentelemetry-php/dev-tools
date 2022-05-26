@@ -9,7 +9,6 @@
         <directory name="src"/>
         <directory name="tests"/>
         <ignoreFiles>
-            <directory name="examples"/>
         </ignoreFiles>
     </projectFiles>
     <plugins>
@@ -18,8 +17,6 @@
     <issueHandlers>
         <UndefinedDocblockClass>
             <errorLevel type="suppress">
-                <file name="src/Symfony/OtelSdkBundle/DependencyInjection/OtelSdkExtension.php" />
-                <referencedClass name="Symfony\Component\DependencyInjection\ContainerBuilder" />
             </errorLevel>
         </UndefinedDocblockClass>
     </issueHandlers>
