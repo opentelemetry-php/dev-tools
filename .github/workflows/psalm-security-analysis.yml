@@ -9,5 +9,5 @@ on:
 
 jobs:
   psalm:
-    uses: opentelemetry-php/gh-workflows/workflows/psalm-security-analysis.yml@main
+    uses: opentelemetry-php/gh-workflows/.github/workflows/psalm-security-analysis.yml@main
 
