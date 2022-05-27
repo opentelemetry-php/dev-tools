@@ -9,6 +9,7 @@
         <directory name="src"/>
         <directory name="tests"/>
         <ignoreFiles>
+            <directory name="vendor"/>
         </ignoreFiles>
     </projectFiles>
     <plugins>
