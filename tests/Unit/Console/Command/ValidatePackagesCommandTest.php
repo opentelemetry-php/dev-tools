@@ -21,8 +21,6 @@ class ValidatePackagesCommandTest extends TestCase
     private const INVALID_COMPOSER_FILE = __DIR__ . '/_files/composer.invalid.json';
     private const BROKEN_COMPOSER_FILE = __DIR__ . '/_files/composer.broken.json';
 
-    private vfsStreamDirectory $root;
-
     public function setUp(): void
     {
         $this->root = vfsStream::setup(self::ROOT_DIR);
@@ -37,8 +35,8 @@ class ValidatePackagesCommandTest extends TestCase
         ];
 
         $commandTester = new CommandTester(
-            new ValidatePackagesCommand(
-                $this->createConfigResolverMock($paths)
+            $this->createValidatePackagesCommand(
+                $paths
             )
         );
         $commandTester->execute([]);
@@ -58,8 +56,8 @@ class ValidatePackagesCommandTest extends TestCase
         ];
 
         $commandTester = new CommandTester(
-            new ValidatePackagesCommand(
-                $this->createConfigResolverMock($paths)
+            $this->createValidatePackagesCommand(
+                $paths
             )
         );
         $commandTester->execute([]);
@@ -79,8 +77,8 @@ class ValidatePackagesCommandTest extends TestCase
         ];
 
         $commandTester = new CommandTester(
-            new ValidatePackagesCommand(
-                $this->createConfigResolverMock($paths)
+            $this->createValidatePackagesCommand(
+                $paths
             )
         );
         $commandTester->execute([]);
@@ -92,8 +90,15 @@ class ValidatePackagesCommandTest extends TestCase
     }
 
     /**
-     * @psalm-return MockObject|ConfigResolverInterface
+     * @psalm-suppress PossiblyInvalidArgument
      */
+    private function createValidatePackagesCommand(array $paths): ValidatePackagesCommand
+    {
+        return new ValidatePackagesCommand(
+            $this->createConfigResolverMock($paths)
+        );
+    }
+
     private function createConfigResolverMock(array $paths): ConfigResolverInterface
     {
         $mock = $this->createMock(ConfigResolverInterface::class);
@@ -102,35 +107,5 @@ class ValidatePackagesCommandTest extends TestCase
             ->willReturn($paths);
 
         return $mock;
-    }
-
-    private function createConfigFile(string $path, string $content): vfsStreamFile
-    {
-        return vfsStream::newFile($path)
-            ->withContent($content)
-            ->at($this->root);
-    }
-
-    private function getValidComposerConfig(): string
-    {
-        return json_encode([
-            'name' => 'test/composer',
-            'description' => 'test',
-            'type' => 'library',
-            'license' => 'Apache-2.0',
-            'autoload' => [
-                'psr-4' => [
-                    'Test\\' => 'test/',
-                ],
-            ],
-            'require' => [
-                'phpunit/phpunit' => '^8.0',
-            ],
-        ], JSON_THROW_ON_ERROR);
-    }
-
-    private function getInvalidComposerConfig(): string
-    {
-        return '{}';
     }
 }
