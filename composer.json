@@ -20,7 +20,7 @@
         "kriswallsmith/buzz": "^1.2",
         "nyholm/psr7": "^1.4",
         "symfony/runtime": "^5.0|^6.0",
-        "symfony/service-contracts": "^1",
+        "symfony/service-contracts": "^1|^2.5",
         "symfony/yaml": "^5.4"
     },
     "autoload": {
