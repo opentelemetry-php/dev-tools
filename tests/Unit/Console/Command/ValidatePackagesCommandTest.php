@@ -6,22 +6,15 @@ namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Composer;
 
 use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
-use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 class ValidatePackagesCommandTest extends TestCase
 {
-    private const ROOT_DIR = 'root';
     private const VALID_COMPOSER_FILE = __DIR__ . '/_files/composer.valid.json';
     private const INVALID_COMPOSER_FILE = __DIR__ . '/_files/composer.invalid.json';
     private const BROKEN_COMPOSER_FILE = __DIR__ . '/_files/composer.broken.json';
-
-    public function setUp(): void
-    {
-        $this->root = vfsStream::setup(self::ROOT_DIR);
-    }
 
     public function test_execute_valid(): void
     {
