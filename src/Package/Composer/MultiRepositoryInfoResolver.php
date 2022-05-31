@@ -13,9 +13,6 @@ use OpenTelemetry\DevTools\Util\PhpTypes;
 
 class MultiRepositoryInfoResolver
 {
-    private const NAME_ATTRIBUTE = 'name';
-    private const TYPE_ATTRIBUTE = 'type';
-
     private ConfigResolverInterface $configResolver;
     private PackageAttributeResolverFactory $packageAttributeResolverFactory;
     private RepositoryFactory $repositoryFactory;
@@ -76,13 +73,13 @@ class MultiRepositoryInfoResolver
     private function getPackageType(string $composerFile): string
     {
         return (string) $this->getPackageNameResolver($composerFile)
-            ->resolve(self::TYPE_ATTRIBUTE, PhpTypes::STRING_TYPE);
+            ->resolve(ConfigAttributes::TYPE, PhpTypes::STRING_TYPE);
     }
 
     private function getPackageName(string $composerFile): string
     {
         return (string) $this->getPackageNameResolver($composerFile)
-            ->resolve(self::NAME_ATTRIBUTE, PhpTypes::STRING_TYPE);
+            ->resolve(ConfigAttributes::NAME, PhpTypes::STRING_TYPE);
     }
 
     private function getPackageNameResolver(string $composerFile): PackageAttributeResolver
