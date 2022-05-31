@@ -48,22 +48,37 @@ class RecursiveDirectoryRemoverTest extends TestCase
 
     public function setUp(): void
     {
-        $this->remover = RecursiveDirectoryRemover::create(true);
+        $this->remover = RecursiveDirectoryRemover::create();
         $this->root = vfsStream::setup(self::ROOT_DIR);
-        //vfsStream::newDirectory(self::TEST_DIR, 0777)->at($this->root);
     }
 
     public function test_delete_files(): void
     {
         $testDirectory = $this->setUpFiles()->url();
 
-        //$this->assertSame(self::FILES_DIR, $testDirectory);
+        $this->assertTrue(
+            $this->remover->remove($testDirectory)
+        );
+
+        $this->assertDirectoryDoesNotExist($testDirectory);
+    }
+
+    public function test_delete_directories(): void
+    {
+        $testDirectory = $this->setUpDirectories()->url();
 
         $this->assertTrue(
             $this->remover->remove($testDirectory)
         );
 
         $this->assertDirectoryDoesNotExist($testDirectory);
+    }
+
+    public function test_delete_invalid_directory(): void
+    {
+        $this->assertFalse(
+            $this->remover->remove('foo')
+        );
     }
 
     private function setUpFiles(): vfsStreamDirectory
@@ -73,14 +88,27 @@ class RecursiveDirectoryRemoverTest extends TestCase
 
         foreach (self::PATHS as $path) {
             vfsStream::newDirectory(dirname(self::FILES_DIR . DIRECTORY_SEPARATOR . $path), 0777)
-            ->at($this->root);
-
-            $file = vfsStream::newFile(self::FILES_DIR . DIRECTORY_SEPARATOR . $path)
-                ->withContent('foo')
                 ->at($this->root);
 
-            echo PHP_EOL . $file->url();
-            echo PHP_EOL . file_get_contents($file->url());
+            vfsStream::newFile(self::FILES_DIR . DIRECTORY_SEPARATOR . $path)
+                ->withContent('foo')
+                ->at($this->root);
+        }
+
+        return $testDirectory;
+    }
+
+    private function setUpDirectories(): vfsStreamDirectory
+    {
+        $testDirectory = vfsStream::newDirectory(self::DIRS_DIR, 0777)
+            ->at($this->root);
+
+        foreach (self::PATHS as $path) {
+            vfsStream::newDirectory(dirname(self::FILES_DIR . DIRECTORY_SEPARATOR . $path), 0777)
+                ->at($this->root);
+
+            vfsStream::newDirectory(self::FILES_DIR . DIRECTORY_SEPARATOR . $path)
+                ->at($this->root);
         }
 
         return $testDirectory;
