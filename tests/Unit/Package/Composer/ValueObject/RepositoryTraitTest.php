@@ -12,20 +12,8 @@ use PHPUnit\Framework\TestCase;
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait
  */
-class RepositoryTraitTest extends TestCase
+class RepositoryTraitTest extends AbstractRepositoryTraitTest
 {
-    public const ATTRIBUTES = [
-        RepositoryInterface::TYPE_ATTRIBUTE => 'path',
-        RepositoryInterface::URL_ATTRIBUTE => 'src/library',
-        RepositoryInterface::PACKAGES_ATTRIBUTE => [
-            self::PACKAGE_ATTRIBUTES,
-        ],
-    ];
-    private const PACKAGE_ATTRIBUTES = [
-        PackageInterface::TYPE_ATTRIBUTE => 'library',
-        PackageInterface::NAME_ATTRIBUTE => 'foo/bar',
-    ];
-
     public function test_to_array(): void
     {
         $this->assertSame(
@@ -46,17 +34,5 @@ class RepositoryTraitTest extends TestCase
                 $this->packages = $packages;
             }
         };
-    }
-
-    private function createPackageInterfaceMock(): PackageInterface
-    {
-        $mock = $this->createMock(PackageInterface::class);
-
-        $mock->method('toArray')
-            ->willReturn(
-                self::ATTRIBUTES[RepositoryInterface::PACKAGES_ATTRIBUTE][0]
-            );
-
-        return $mock;
     }
 }
