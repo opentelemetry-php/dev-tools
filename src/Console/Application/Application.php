@@ -7,7 +7,7 @@ namespace OpenTelemetry\DevTools\Console\Application;
 use OpenTelemetry\DevTools\Console\Command\Composer\ValidateInstallationCommand;
 use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
-use OpenTelemetry\DevTools\Package\Composer\PackageInfoResolver;
+use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
 use Symfony\Component\Console\Application as BaseApplication;
 
@@ -29,7 +29,7 @@ class Application extends BaseApplication
                 new ConfigResolver()
             ),
             new ValidateInstallationCommand(
-                new PackageInfoResolver(
+                new MultiRepositoryInfoResolver(
                     new ConfigResolver(),
                     new PackageAttributeResolverFactory()
                 )
