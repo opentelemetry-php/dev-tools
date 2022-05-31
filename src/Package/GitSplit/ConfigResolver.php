@@ -2,13 +2,15 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Package\Composer;
+namespace OpenTelemetry\DevTools\Package\GitSplit;
 
 use InvalidArgumentException;
+use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
+use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
-class GitSplitConfigResolver implements ConfigResolverInterface
+class ConfigResolver implements ConfigResolverInterface
 {
     private const SPLITS_KEY = 'splits';
     private const PREFIX_KEY = 'prefix';
@@ -26,7 +28,7 @@ class GitSplitConfigResolver implements ConfigResolverInterface
     {
         $gitSplitConfig = self::parseGitSplitFile($this->configFile);
 
-        if (!self::validateConfigContent($gitSplitConfig)) {
+        if (!ConfigValidator::create($gitSplitConfig)->validate()) {
             return [];
         }
 
@@ -35,7 +37,7 @@ class GitSplitConfigResolver implements ConfigResolverInterface
 
     public function getDefaultConfigPath(): string
     {
-        return sprintf('%s/%s', getcwd() !== false ?  getcwd() : '.', self::GIT_SPLIT_FILE_NAME);
+        return sprintf('%s/%s', WorkingDirectoryResolver::create()->resolve(), self::GIT_SPLIT_FILE_NAME);
     }
 
     private static function parseGitSplitFile(string $filePath): array
@@ -62,21 +64,16 @@ class GitSplitConfigResolver implements ConfigResolverInterface
         return $result;
     }
 
-    private static function resolveComposerFilePath(string $path): string
+    private static function resolveComposerFilePath(string $directory): string
     {
-        if (substr($path, -1) !== '/') {
-            $path .= '/';
+        if (substr($directory, -1) !== '/') {
+            $directory .= '/';
         }
 
         return sprintf(
             '%s%s',
-            $path,
+            $directory,
             self::COMPOSER_FILE_NAME
         );
-    }
-
-    private static function validateConfigContent(array $config): bool
-    {
-        return isset($config[self::SPLITS_KEY]) && is_array($config[self::SPLITS_KEY]);
     }
 }
