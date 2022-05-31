@@ -6,13 +6,13 @@ namespace OpenTelemetry\DevTools\Util;
 
 interface PhpTypes
 {
-    public const BOOL_TYPE = 'bool';
-    public const INT_TYPE = 'int';
-    public const FLOAT_TYPE = 'float';
+    public const BOOL_TYPE = 'boolean';
+    public const INT_TYPE = 'integer';
+    public const FLOAT_TYPE = 'double';
     public const STRING_TYPE = 'string';
-    public const ARRAY_TYPE = 'bool';
-    public const OBJECT_TYPE = 'bool';
-    public const NULL_TYPE = 'bool';
+    public const ARRAY_TYPE = 'array';
+    public const OBJECT_TYPE = 'object';
+    public const NULL_TYPE = 'NULL';
 
     public const TYPES = [
         self::BOOL_TYPE,
