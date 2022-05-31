@@ -32,7 +32,7 @@ class PackageAttributeResolver
             : $this->castType(
                 $type,
                 $this->doResolve($attributeName)
-            );  
+            );
     }
 
     public function getComposerFilePath(): string

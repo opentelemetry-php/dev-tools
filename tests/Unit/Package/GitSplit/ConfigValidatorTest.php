@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\GitSplit;
 
 use Generator;
-use OpenTelemetry\DevTools\Package\GitSplit\ConfigValidator;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigAttributes;
+use OpenTelemetry\DevTools\Package\GitSplit\ConfigValidator;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\GitSplit\ConfigValidator
@@ -22,7 +21,7 @@ class ConfigValidatorTest extends TestCase
         ],[
             ConfigAttributes::PREFIX_ATTRIBUTE => 'src/B',
             ConfigAttributes::TARGET_ATTRIBUTE => 'https://example.com/B/package.git',
-        ],]
+        ],],
     ];
 
     private const INVALID_CONFIGS = [

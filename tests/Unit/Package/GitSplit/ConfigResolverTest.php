@@ -6,10 +6,8 @@ namespace OpenTelemetry\DevTools\Tests\Unit\Package\GitSplit;
 
 use InvalidArgumentException;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
-use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsConstants;
 use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
 use PHPUnit\Framework\TestCase;
 

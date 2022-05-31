@@ -7,9 +7,8 @@ namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer;
 use Generator;
 use InvalidArgumentException;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolver;
-use OpenTelemetry\DevTools\Util\PhpTypes;
-use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsConstants;
 use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
+use OpenTelemetry\DevTools\Util\PhpTypes;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
 
@@ -26,11 +25,11 @@ class PackageAttributeResolverTest extends TestCase
     private const VALID_CONFIG = [
         self::TYPE_ATTRIBUTE => 'library',
         self::AUTHORS_ATTRIBUTE => [[
-            'name' => 'Foo Bar'
+            'name' => 'Foo Bar',
         ]],
         self::REQUIRE_ATTRIBUTE => [
-            'foo/bar' => '1.0.0'
-        ]
+            'foo/bar' => '1.0.0',
+        ],
     ];
 
     private const TYPE_MATRIX = [
@@ -61,8 +60,6 @@ class PackageAttributeResolverTest extends TestCase
 
     private const COMPOSER_FILE_NAME = 'composer.json';
 
-
-
     public function setUp(): void
     {
         $this->setUpVcs();
@@ -71,7 +68,7 @@ class PackageAttributeResolverTest extends TestCase
     /**
      * @dataProvider provideAttributes
      */
-    public function test_resolve(string  $attribute, $value): void
+    public function test_resolve(string $attribute, $value): void
     {
         $this->assertSame(
             $value,
@@ -137,7 +134,7 @@ class PackageAttributeResolverTest extends TestCase
             $this->createValidConfig()
         );
 
-        $this->assertSame(  
+        $this->assertSame(
             $path,
             PackageAttributeResolver::create($path)
                 ->getComposerFilePath()
@@ -146,15 +143,15 @@ class PackageAttributeResolverTest extends TestCase
 
     public function provideAttributes(): Generator
     {
-        foreach(self::VALID_CONFIG as $attribute => $value) {
+        foreach (self::VALID_CONFIG as $attribute => $value) {
             yield [$attribute, $value];
         }
     }
 
     public function provideAttributeTypes(): Generator
     {
-        foreach(self::TYPE_MATRIX as $attribute => $types) {
-            foreach($types as $type) {
+        foreach (self::TYPE_MATRIX as $attribute => $types) {
+            foreach ($types as $type) {
                 yield [$attribute, $type];
             }
         }
@@ -172,5 +169,4 @@ class PackageAttributeResolverTest extends TestCase
     {
         return json_encode(self::VALID_CONFIG, JSON_THROW_ON_ERROR);
     }
-
 }

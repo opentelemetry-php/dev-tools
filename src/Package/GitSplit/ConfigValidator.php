@@ -20,13 +20,13 @@ class ConfigValidator
 
     public function validate(): bool
     {
-        if(!isset($this->config[ConfigAttributes::SPLITS_ATTRIBUTE])
+        if (!isset($this->config[ConfigAttributes::SPLITS_ATTRIBUTE])
             || !is_array($this->config[ConfigAttributes::SPLITS_ATTRIBUTE])) {
             return false;
         }
 
-        foreach($this->config[ConfigAttributes::SPLITS_ATTRIBUTE] as $config) {
-            if(!self::validateSplitAttributes($config)){
+        foreach ($this->config[ConfigAttributes::SPLITS_ATTRIBUTE] as $config) {
+            if (!self::validateSplitAttributes($config)) {
                 return false;
             }
         }
@@ -36,12 +36,12 @@ class ConfigValidator
 
     private static function validateSplitAttributes($config): bool
     {
-        if(!is_array($config)) {
+        if (!is_array($config)) {
             return false;
         }
 
-        foreach(ConfigAttributes::SPLITS_ATTRIBUTES as $attribute) {
-            if(!array_key_exists($attribute, $config)) {
+        foreach (ConfigAttributes::SPLITS_ATTRIBUTES as $attribute) {
+            if (!array_key_exists($attribute, $config)) {
                 return false;
             }
         }
