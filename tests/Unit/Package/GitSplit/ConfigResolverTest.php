@@ -6,6 +6,8 @@ namespace OpenTelemetry\DevTools\Tests\Unit\Package\GitSplit;
 
 use InvalidArgumentException;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
+use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsConstants;
+use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
@@ -13,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 
 class ConfigResolverTest extends TestCase
 {
+    use UsesVfsTrait;
+
     private const ROOT_DIR = 'root';
     private const GITSPLIT_FILE = '.gitsplit.yml';
     private const GITSPLIT_CONFIG_PATH = self::ROOT_DIR . '/' . self::GITSPLIT_FILE;
@@ -22,11 +26,9 @@ class ConfigResolverTest extends TestCase
         'C' => 'src/C',
     ];
 
-    private vfsStreamDirectory $root;
-
     public function setUp(): void
     {
-        $this->root = vfsStream::setup(self::ROOT_DIR);
+        $this->setUpVcs();
     }
 
     public function test_resolve(): void
