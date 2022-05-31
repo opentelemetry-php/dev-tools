@@ -43,7 +43,7 @@ class SingleRepositoryTraitTest extends AbstractRepositoryTest
     public function test_get_package_name(): void
     {
         $this->assertEquals(
-            self::PACKAGE_NAME,
+            PackageAttributes::NAME,
             $this->repository->getPackageName()
         );
     }
@@ -51,7 +51,7 @@ class SingleRepositoryTraitTest extends AbstractRepositoryTest
     public function test_get_package_type(): void
     {
         $this->assertEquals(
-            self::PACKAGE_TYPE,
+            PackageAttributes::TYPE,
             $this->repository->getPackageType()
         );
     }
