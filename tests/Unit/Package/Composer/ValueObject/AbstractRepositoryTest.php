@@ -8,7 +8,7 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\PackageInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryInterface;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractRepositoryTraitTest extends TestCase
+abstract class AbstractRepositoryTest extends TestCase
 {
     public const REPOSITORY_TYPE = 'path';
     public const REPOSITORY_URL = 'src/library';

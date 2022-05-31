@@ -10,7 +10,7 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait;
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait
  */
-class RepositoryTraitTest extends AbstractRepositoryTraitTest
+class RepositoryTest extends AbstractRepositoryTest
 {
     public function test_to_array(): void
     {

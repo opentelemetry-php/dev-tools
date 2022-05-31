@@ -9,7 +9,7 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\GenericRepository;
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\GenericRepository
  */
-class GenericRepositoryTest extends AbstractRepositoryTraitTest
+class GenericRepositoryTest extends AbstractRepositoryTest
 {
     public function test_create(): void
     {

@@ -10,7 +10,7 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\VcsRepository;
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\VcsRepository
  */
-class VcsRepositoryTest extends AbstractRepositoryTraitTest
+class VcsRepositoryTest extends AbstractRepositoryTest
 {
     public function test_get_type(): void
     {

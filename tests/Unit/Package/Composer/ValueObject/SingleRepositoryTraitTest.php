@@ -11,7 +11,7 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryTrait;
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryTrait
  */
-class SingleRepositoryTraitTest extends AbstractRepositoryTraitTest
+class SingleRepositoryTraitTest extends AbstractRepositoryTest
 {
     public const REPOSITORY_TYPE = 'path';
     private const COMPOSER_FILE_PATH = self::ATTRIBUTES[RepositoryInterface::URL_ATTRIBUTE]
