@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer\ValueObject;
 
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\PackageInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryInterface;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait;
-use PHPUnit\Framework\TestCase;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryTrait;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryTrait;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryTrait
@@ -68,7 +65,8 @@ class SingleRepositoryTraitTest extends AbstractRepositoryTraitTest
     }
 }
 
-class SingleRepositoryTraitImplementation implements SingleRepositoryInterface {
+class SingleRepositoryTraitImplementation implements SingleRepositoryInterface
+{
     use SingleRepositoryTrait;
 
     protected function setType(): void

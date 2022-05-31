@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer\ValueObject;
 
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\PackageInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait;
-use PHPUnit\Framework\TestCase;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryTrait
