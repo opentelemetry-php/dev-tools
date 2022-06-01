@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Util;
 
-use Closure;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SplFileInfo;
 
 class RecursiveDirectoryRemover
 {
@@ -33,6 +31,7 @@ class RecursiveDirectoryRemover
         }
 
         $success = rmdir($directory);
+
         return $success ? $result : false;
     }
 

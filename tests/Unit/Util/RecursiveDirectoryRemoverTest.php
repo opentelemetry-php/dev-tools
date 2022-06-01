@@ -9,18 +9,6 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Override realpath() in current namespace for testing
- *
- * @param string $path     the file path
- *
- * @return string
- */
-function realpath($path)
-{
-    return $path;
-}
-
 class RecursiveDirectoryRemoverTest extends TestCase
 {
     private const ROOT_DIR = 'root';
