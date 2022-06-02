@@ -6,14 +6,18 @@ namespace OpenTelemetry\DevTools\Console\Command\Composer;
 
 use Composer\Command\ValidateCommand;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
+use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\UsesThirdPartyCommandTrait;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Throwable;
 
 class ValidatePackagesCommand extends Command
 {
+    use UsesThirdPartyCommandTrait;
+
     public const NAME = 'packages:composer:validate';
     public const DESCRIPTION = 'Validates composer files of the individual packages';
 
@@ -55,11 +59,11 @@ class ValidatePackagesCommand extends Command
                 }
 
                 $output->writeln('<fg=green>OK!</>');
-            } catch (\Exception $e) {
+            } catch (Throwable $t) {
                 $output->writeln(sprintf(
                     '<fg=red>Error Validating %s : %s</>',
                     $composerFile,
-                    $e->getMessage()
+                    $t->getMessage()
                 ));
 
                 return self::FAILURE;
@@ -71,24 +75,15 @@ class ValidatePackagesCommand extends Command
 
     private function runValidateCommand(string $composerFile): int
     {
-        return $this->createValidateCommand()
-            ->run(
-                new ArrayInput([
+        return $this->createAndRunCommand(
+            ValidateCommand::class,
+            new ArrayInput([
                 'file' => $composerFile,
             ]),
-                new ConsoleOutput(
-                    OutputInterface::VERBOSITY_DEBUG
-                )
-            );
-    }
+            new ConsoleOutput(
+                OutputInterface::VERBOSITY_DEBUG
 
-    private function createValidateCommand(): ValidateCommand
-    {
-        $validateCommand = new ValidateCommand();
-        $validateCommand->setApplication(
-            $this->getApplication()
+            )
         );
-
-        return $validateCommand;
     }
 }
