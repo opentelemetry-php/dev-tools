@@ -9,6 +9,7 @@ trait PackageTrait
     use ValueObjectTrait;
 
     private string $name;
+    private DependencyCollection $dependencies;
 
     public function getName(): string
     {
@@ -17,11 +18,22 @@ trait PackageTrait
 
     abstract public function getType(): string;
 
+    public function setDependencies(?DependencyCollection $dependencies): void
+    {
+        $this->dependencies = $dependencies;
+    }
+
+    public function getDependencies(): DependencyCollection
+    {
+        return $this->dependencies ?? $this->dependencies = DependencyCollection::create();
+    }
+
     public function toArray(): array
     {
         return [
             PackageInterface::TYPE_ATTRIBUTE => $this->getType(),
             PackageInterface::NAME_ATTRIBUTE => $this->getName(),
+            PackageInterface::DEPENDENCIES_ATTRIBUTE => $this->getDependencies()->toArray(),
         ];
     }
 }
