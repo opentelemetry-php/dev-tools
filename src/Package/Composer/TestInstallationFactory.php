@@ -4,38 +4,48 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Package\Composer;
 
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
+
 class TestInstallationFactory
 {
-    private array $defaultDependencies = [];
+    private TestConfigFactory $testConfigFactory;
 
-    public function __construct(array $defaultDependencies = [])
+    public function __construct(?TestConfigFactory $testConfigFactory = null, array $defaultDependencies = [])
     {
-        foreach ($defaultDependencies as $packageName => $versionConstraint) {
-            $this->addDefaultDependency(
-                $packageName,
-                $versionConstraint
-            );
-        }
+        $this->testConfigFactory = $testConfigFactory ?? TestConfigFactory::create($defaultDependencies);
     }
 
-    public static function create(array $defaultDependencies = []): self
-    {
-        return new self($defaultDependencies);
+    public static function create(
+        ?TestConfigFactory $testConfigFactory = null,
+        array $defaultDependencies = []
+    ): TestInstallationFactory {
+        return new self($testConfigFactory, $defaultDependencies);
     }
 
-    public function build(?string $name = null, ?string $type = null): TestInstallation
+    public function build(
+        SingleRepositoryInterface $testedRepository,
+        ?string $testedBranch = null,
+        ?RepositoryCollection $dependencies = null
+    ): TestInstallation {
+        return TestInstallation::create(
+            $testedRepository,
+            $this->testConfigFactory->build(
+                $testedRepository->getPackageName(),
+                $testedRepository->getPackageType()
+            ),
+            $dependencies,
+            $testedBranch
+        );
+    }
+
+    public function getTestConfigFactory(): TestConfigFactory
     {
-        $installation = TestInstallation::create($name, $type);
-
-        foreach ($this->defaultDependencies as $packageName => $versionConstraint) {
-            $installation->addRequire($packageName, $versionConstraint);
-        }
-
-        return $installation;
+        return $this->testConfigFactory;
     }
 
     public function addDefaultDependency(string $packageName, string $versionConstraint): void
     {
-        $this->defaultDependencies[$packageName] = $versionConstraint;
+        $this->getTestConfigFactory()->addDefaultDependency($packageName, $versionConstraint);
     }
 }

@@ -4,117 +4,161 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Package\Composer;
 
-use JsonSerializable;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
+use RuntimeException;
+use Throwable;
 
-class TestInstallation implements JsonSerializable
+class TestInstallation
 {
-    public const DEFAULT_NAME = 'test/package';
-    public const DEFAULT_DESCRIPTION = 'Test Package';
-    public const DEFAULT_TYPE = PackageTypes::PROJECT_TYPE;
-    public const DEFAULT_LICENSE = 'Apache-2.0';
-    public const DEFAULT_MINIMUM_STABILITY = 'dev';
-    public const DEFAULT_PREFER_STABLE = true;
+    public const COMPOSER_FILE_NAME = 'composer.json';
+    public const DEFAULT_BRANCH = 'main';
+    public const BRANCH_VERSION_PREFIX = 'dev-';
 
-    private string $name;
-    private string $type;
-    private string $description = self::DEFAULT_DESCRIPTION;
-    private string $license = self::DEFAULT_LICENSE;
-    private string $minimumStability = self::DEFAULT_MINIMUM_STABILITY;
-    private bool $preferStable = self::DEFAULT_PREFER_STABLE;
-    private array $autoload = [
-        ConfigAttributes::PSR4 => [],
-    ];
-    private array $require = [];
-    private array $repositories = [];
+    private SingleRepositoryInterface $testedRepository;
+    private TestConfig $config;
+    private RepositoryCollection $dependencies;
+    private string $testedBranch;
 
-    public function __construct(?string $name = null, ?string $type = null)
-    {
-        $this->name = $name ?? self::DEFAULT_NAME;
-        $this->type = $type ?? self::DEFAULT_TYPE;
+    public function __construct(
+        SingleRepositoryInterface $testedRepository,
+        ?TestConfig $config = null,
+        ?RepositoryCollection $dependencies = null,
+        ?string $testedBranch = null
+    ) {
+        $this->init($testedRepository, $config, $dependencies, $testedBranch);
     }
 
-    public static function create(?string $name = null, ?string $type = null): TestInstallation
-    {
-        return new self($name, $type);
+    public static function create(
+        SingleRepositoryInterface $testedRepository,
+        ?TestConfig $config = null,
+        ?RepositoryCollection $dependencies = null,
+        ?string $testedBranch = null
+    ): TestInstallation {
+        return new self($testedRepository, $config, $dependencies, $testedBranch);
     }
 
-    public function setName(string $name): void
+    public function getConfig(): TestConfig
     {
-        $this->name = $name;
+        return $this->config;
     }
 
-    public function setDescription(string $description): void
+    public function getTestedRepository(): SingleRepositoryInterface
     {
-        $this->description = $description;
+        return $this->testedRepository;
     }
 
-    public function setType(string $type): void
+    public function getDependencies(): RepositoryCollection
     {
-        $this->type = $type;
+        return $this->dependencies;
     }
 
-    public function setLicense(string $license): void
+    public function getTestedBranch(): string
     {
-        $this->license = $license;
+        return $this->testedBranch;
     }
 
-    public function setMinimumStability(string $minimumStability): void
+    public function getTestedBranchVersion(): string
     {
-        $this->minimumStability = $minimumStability;
+        return self::normalizeBranchVersion(
+            $this->testedBranch
+        );
     }
 
-    public function setPreferStable(bool $preferStable): void
-    {
-        $this->preferStable = $preferStable;
+    private function init(
+        SingleRepositoryInterface $testedRepository,
+        ?TestConfig $config = null,
+        ?RepositoryCollection $dependencies = null,
+        ?string $testedBranch = null
+    ): void {
+        $this->setTestedRepository($testedRepository);
+        $this->setConfig($config);
+        $this->setDependencies($dependencies);
+        $this->setTestedBranch($testedBranch);
+
+        $this->requireTestedRepository();
+        $this->requireDependencies();
     }
 
-    public function addRequire(string $packageName, string $versionConstraint): void
+    public function writeComposerFile(): void
     {
-        $this->require[$packageName] = $versionConstraint;
-    }
-
-    public function addAutoloadPsr4(string $namespace, string $directory): void
-    {
-        $this->autoload[ConfigAttributes::PSR4][$namespace] = $directory;
-    }
-
-    public function addRepository(string $type, string $url): void
-    {
-        $this->repositories[] = [
-            ConfigAttributes::TYPE => $type,
-            ConfigAttributes::URL => $url,
-        ];
-    }
-
-    public function toArray(): array
-    {
-        $config = [
-            ConfigAttributes::NAME => $this->name,
-            ConfigAttributes::DESCRIPTION => $this->description,
-            ConfigAttributes::TYPE => $this->type,
-            ConfigAttributes::LICENSE => $this->license,
-            ConfigAttributes::MINIMUM_STABILITY => $this->minimumStability,
-            ConfigAttributes::PREFER_STABLE => $this->preferStable,
-        ];
-
-        if (!empty($this->autoload[ConfigAttributes::PSR4])) {
-            $config[ConfigAttributes::AUTOLOAD] = $this->autoload;
+        try {
+            file_put_contents(
+                $this->getTestedRepository()->getComposerFilePath(),
+                $this->toJson()
+            );
+        } catch (Throwable $t) {
+            throw new RuntimeException(
+                sprintf('Could not write config to %s', $this->getTestedRepository()->getComposerFilePath()),
+                $t->getCode(),
+                $t
+            );
         }
-
-        if (!empty($this->require)) {
-            $config[ConfigAttributes::REQUIRE] = $this->require;
-        }
-
-        if (!empty($this->repositories)) {
-            $config[ConfigAttributes::REPOSITORIES] = $this->repositories;
-        }
-
-        return $config;
     }
 
-    #[\ReturnTypeWillChange]
-    public function jsonSerialize()
+    public function toJson(): string
     {
-        return $this->toArray();
+        try {
+            return json_encode($this->config->toArray(), JSON_THROW_ON_ERROR + JSON_PRETTY_PRINT);
+        } catch (Throwable $t) {
+            throw new RuntimeException(
+                sprintf('Could not serialize "%s"', __CLASS__),
+                $t->getCode(),
+                $t
+            );
+        }
+    }
+
+    public function __toString()
+    {
+        return $this->toJson();
+    }
+
+    private function setTestedRepository(SingleRepositoryInterface $package): void
+    {
+        $this->testedRepository = $package;
+    }
+
+    private function setConfig(?TestConfig $config): void
+    {
+        $this->config = $config ?? TestConfigFactory::create()->build();
+    }
+
+    private function setTestedBranch(?string $testedBranch = null): void
+    {
+        $this->testedBranch = $testedBranch ?? self::DEFAULT_BRANCH;
+    }
+
+    private function setDependencies(?RepositoryCollection $dependencies = null): void
+    {
+        $this->dependencies = $dependencies ?? RepositoryCollection::create();
+    }
+
+    private function requireTestedRepository(): void
+    {
+        $this->getConfig()->addRequire(
+            $this->testedRepository->getPackageName(),
+            $this->getTestedBranchVersion()
+        );
+    }
+
+    private function requireDependencies(): void
+    {
+        /** @var SingleRepositoryInterface $repository */
+        foreach ($this->getDependencies() as $repository) {
+            $this->getConfig()->addRepository(
+                $repository->getType(),
+                $repository->getUrl()
+            );
+        }
+    }
+
+    private static function normalizeBranchVersion(string $branchVersion): string
+    {
+        return self::BRANCH_VERSION_PREFIX . preg_replace(
+            sprintf('/%s/', self::BRANCH_VERSION_PREFIX),
+            '',
+            $branchVersion
+        );
     }
 }

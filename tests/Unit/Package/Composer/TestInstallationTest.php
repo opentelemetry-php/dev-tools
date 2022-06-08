@@ -4,190 +4,178 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer;
 
-use Generator;
+use ArrayIterator;
+use Exception;
+use JsonException;
 use OpenTelemetry\DevTools\Package\Composer\ConfigAttributes;
+use OpenTelemetry\DevTools\Package\Composer\TestConfig;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallation;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
 use PHPUnit\Framework\TestCase;
+use org\bovigo\vfs\vfsStream;
+use org\bovigo\vfs\vfsStreamDirectory;
+use RuntimeException;
+use stdClass;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\TestInstallation
  */
 class TestInstallationTest extends TestCase
 {
-    private const DEFAULT_SCALAR_VALUES = [
-        ConfigAttributes::NAME => TestInstallation::DEFAULT_NAME,
-        ConfigAttributes::DESCRIPTION => TestInstallation::DEFAULT_DESCRIPTION,
-        ConfigAttributes::TYPE => TestInstallation::DEFAULT_TYPE,
-        ConfigAttributes::LICENSE => TestInstallation::DEFAULT_LICENSE,
-        ConfigAttributes::MINIMUM_STABILITY => TestInstallation::DEFAULT_MINIMUM_STABILITY,
-        ConfigAttributes::PREFER_STABLE => TestInstallation::DEFAULT_PREFER_STABLE,
-    ];
-    private const NON_SCALAR_ATTRIBUTES = [
-        ConfigAttributes::AUTOLOAD,
-        ConfigAttributes::REQUIRE,
-        ConfigAttributes::REPOSITORIES,
-    ];
-    private const TEST_VALUES = [
+    private const ROOT_DIR = 'root';
+    private const TEST_DIR = 'test';
+    private const TESTED_BRANCH = 'root';
+    private const TEST_CONFIG = [
         ConfigAttributes::NAME => 'foo/bar',
-        ConfigAttributes::DESCRIPTION => 'foo bar',
-        ConfigAttributes::TYPE => 'foo type',
-        ConfigAttributes::LICENSE => 'foo license',
-        ConfigAttributes::MINIMUM_STABILITY => 'test',
-        ConfigAttributes::PREFER_STABLE => !TestInstallation::DEFAULT_PREFER_STABLE,
-        ConfigAttributes::AUTOLOAD => [
-            ConfigAttributes::PSR4 => [
-                'Foo\\Bar\\' => 'src/Foo/Bar',
-            ],
-        ],
-        ConfigAttributes::REQUIRE => [
-            'foo/bar' => '^1.0.0',
-        ],
-        ConfigAttributes::REPOSITORIES => [[
-            ConfigAttributes::TYPE => 'foo type',
-            ConfigAttributes::URL => 'https://example.com/foo/bar.git',
-        ]],
+        ConfigAttributes::DESCRIPTION => 'foo bar baz',
+        ConfigAttributes::TYPE => 'foo',
+        ConfigAttributes::LICENSE => 'Test License',
+        ConfigAttributes::MINIMUM_STABILITY => 'dev',
+        ConfigAttributes::PREFER_STABLE => true,
     ];
 
-    public function test_create_with_arguments(): void
+    private TestInstallation $instance;
+    private SingleRepositoryInterface $repository;
+    private TestConfig $config;
+    private RepositoryCollection $dependencies;
+    private vfsStreamDirectory $root;
+    private string $testDirectory;
+
+    protected function setUp(): void
     {
-        $name = self::TEST_VALUES[ConfigAttributes::NAME];
-        $type = self::TEST_VALUES[ConfigAttributes::TYPE];
+        $this->root = vfsStream::setup(self::ROOT_DIR);
+        $this->testDirectory = vfsStream::newDirectory(self::TEST_DIR, 0777)
+            ->at($this->root)
+            ->url();
 
-        $data = $this->createSerialization($name, $type);
+        $this->repository = $this->createMock(SingleRepositoryInterface::class);
+        $dependency = $this->createMock(SingleRepositoryInterface::class);
+        $dependency->method('getType')
+            ->willReturn('foo');
+        $dependency->method('getUrl')
+            ->willReturn('bar');
+        $this->repository->method('getUrl')
+            ->willReturn('bar');
 
-        $this->assertSame(
-            $name,
-            $data[ConfigAttributes::NAME]
+        $this->dependencies = $this->createMock(RepositoryCollection::class);
+        $this->dependencies->method('getIterator')
+            ->willReturn(new ArrayIterator([$dependency]));
+
+        $this->config = $this->createMock(TestConfig::class);
+
+        $this->instance = TestInstallation::create(
+            $this->repository,
+            $this->config,
+            $this->dependencies,
+            self::TESTED_BRANCH
         );
+    }
 
+    public function test_get_config(): void
+    {
         $this->assertSame(
-            $type,
-            $data[ConfigAttributes::TYPE]
+            $this->config,
+            $this->instance->getConfig()
+        );
+    }
+
+    public function test_get_tested_repository(): void
+    {
+        $this->assertSame(
+            $this->repository,
+            $this->instance->getTestedRepository()
+        );
+    }
+
+    public function test_get_dependencies(): void
+    {
+        $this->assertSame(
+            $this->dependencies,
+            $this->instance->getDependencies()
+        );
+    }
+
+    public function test_get_tested_branch(): void
+    {
+        $this->assertSame(
+            self::TESTED_BRANCH,
+            $this->instance->getTestedBranch()
         );
     }
 
     /**
-     * @dataProvider provideDefaultValues
+     * @throws JsonException
      */
-    public function test_create_default(string $attribute, $value): void
+    public function test_to_json(): void
     {
+        $this->config->method('toArray')
+            ->willReturn(self::TEST_CONFIG);
+
         $this->assertSame(
-            $value,
-            $this->createSerialization()[$attribute]
+            self::TEST_CONFIG,
+            json_decode($this->instance->toJson(), true, 512, JSON_THROW_ON_ERROR)
         );
+    }
+
+    public function test_to_json_throws_exception_on_invalid_json(): void
+    {
+        $this->config->method('toArray')
+            ->willThrowException(
+                new Exception()
+            );
+
+        $this->expectException(RuntimeException::class);
+
+        $this->instance->toJson();
     }
 
     /**
-     * @dataProvider provideDefaultUnsetValues
+     * @throws JsonException
      */
-    public function test_create_default_unset_attributes(string $attribute): void
+    public function test_to_string(): void
     {
-        $this->assertArrayNotHasKey(
-            $attribute,
-            $this->createSerialization()
-        );
-    }
-
-    /**
-     * @dataProvider provideScalarValues
-     */
-    public function test_scalar_setters(string $attribute, $value): void
-    {
-        $setter = $this->getSetterFromAttribute($attribute);
-        $instance = $this->createInstance();
-
-        $instance->{$setter}($value);
+        $this->config->method('toArray')
+            ->willReturn(self::TEST_CONFIG);
 
         $this->assertSame(
-            $value,
-            $instance->toArray()[$attribute]
+            self::TEST_CONFIG,
+            json_decode((string)$this->instance, true, 512, JSON_THROW_ON_ERROR)
         );
     }
 
-    public function test_add_autoload(): void
+    public function test_write_composer_file(): void
     {
-        $instance = $this->createInstance();
+        $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;
+        $this->repository->method('getComposerFilePath')
+            ->willReturn($composerPath);
 
-        foreach (self::TEST_VALUES[ConfigAttributes::AUTOLOAD][ConfigAttributes::PSR4] as $namespace => $directory) {
-            $instance->addAutoloadPsr4(
-                $namespace,
-                $directory
-            );
-        }
+        $this->config->method('toArray')
+            ->willReturn(self::TEST_CONFIG);
+
+        $this->instance->writeComposerFile();
+
+        $this->assertFileExists($composerPath);
 
         $this->assertSame(
-            self::TEST_VALUES[ConfigAttributes::AUTOLOAD],
-            $instance->toArray()[ConfigAttributes::AUTOLOAD]
+            $this->instance->toJson(),
+            file_get_contents($composerPath)
         );
     }
 
-    public function test_add_dependency(): void
+    public function test_write_composer_file_throws_exception_on_file_write_error(): void
     {
-        $instance = $this->createInstance();
+        $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;
+        $this->repository->method('getComposerFilePath')
+            ->willReturn('foo://bar.baz');
 
-        foreach (self::TEST_VALUES[ConfigAttributes::REQUIRE] as $packageName => $versionConstraint) {
-            $instance->addRequire(
-                $packageName,
-                $versionConstraint
-            );
-        }
+        $this->expectException(RuntimeException::class);
 
-        $this->assertSame(
-            self::TEST_VALUES[ConfigAttributes::REQUIRE],
-            $instance->toArray()[ConfigAttributes::REQUIRE]
-        );
-    }
+        $this->config->method('toArray')
+            ->willReturn(self::TEST_CONFIG);
 
-    public function test_add_repository(): void
-    {
-        $instance = $this->createInstance();
+        $this->instance->writeComposerFile();
 
-        foreach (self::TEST_VALUES[ConfigAttributes::REPOSITORIES] as $config) {
-            $instance->addRepository(
-                $config[ConfigAttributes::TYPE],
-                $config[ConfigAttributes::URL]
-            );
-        }
-
-        $this->assertSame(
-            self::TEST_VALUES[ConfigAttributes::REPOSITORIES],
-            $instance->toArray()[ConfigAttributes::REPOSITORIES]
-        );
-    }
-
-    public function provideDefaultValues(): Generator
-    {
-        foreach (self::DEFAULT_SCALAR_VALUES as $key => $value) {
-            yield [$key, $value];
-        }
-    }
-
-    public function provideDefaultUnsetValues(): Generator
-    {
-        foreach (self::NON_SCALAR_ATTRIBUTES as $attribute) {
-            yield [$attribute];
-        }
-    }
-
-    public function provideScalarValues(): Generator
-    {
-        foreach (array_keys(self::DEFAULT_SCALAR_VALUES) as $attribute) {
-            yield [$attribute, self::TEST_VALUES[$attribute]];
-        }
-    }
-
-    private function createSerialization(?string $name = null, ?string $type = null): array
-    {
-        return $this->createInstance($name, $type)->jsonSerialize();
-    }
-
-    private function createInstance(?string $name = null, ?string $type = null): TestInstallation
-    {
-        return TestInstallation::create($name, $type);
-    }
-
-    private function getSetterFromAttribute(string $attribute): string
-    {
-        return 'set' . ucfirst(str_replace('-', '', $attribute));
+        $this->assertFileDoesNotExist($composerPath);
     }
 }
