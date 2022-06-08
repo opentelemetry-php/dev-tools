@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer;
 
 use OpenTelemetry\DevTools\Package\Composer\ConfigAttributes;
-use OpenTelemetry\DevTools\Package\Composer\TestInstallation;
-use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
+use OpenTelemetry\DevTools\Package\Composer\TestConfig;
+use OpenTelemetry\DevTools\Package\Composer\TestConfigFactory;
 use PHPUnit\Framework\TestCase;
 
 /**
- * @covers \OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory
+ * @covers \OpenTelemetry\DevTools\Package\Composer\TestConfigFactory
  */
-class TestInstallationFactoryTest extends TestCase
+class TestConfigFactoryTest extends TestCase
 {
     private const DEFAULT_DEPENDENCIES = [
         'foo/bar' => '^1.0.0',
@@ -26,12 +26,12 @@ class TestInstallationFactoryTest extends TestCase
         $data = $this->createInstance()->build()->toArray();
 
         $this->assertSame(
-            TestInstallation::DEFAULT_NAME,
+            TestConfig::DEFAULT_NAME,
             $data[ConfigAttributes::NAME]
         );
 
         $this->assertSame(
-            TestInstallation::DEFAULT_TYPE,
+            TestConfig::DEFAULT_TYPE,
             $data[ConfigAttributes::TYPE]
         );
     }
@@ -80,8 +80,8 @@ class TestInstallationFactoryTest extends TestCase
         );
     }
 
-    private function createInstance(array $defaultDependencies = []): TestInstallationFactory
+    private function createInstance(array $defaultDependencies = []): TestConfigFactory
     {
-        return TestInstallationFactory::create($defaultDependencies);
+        return TestConfigFactory::create($defaultDependencies);
     }
 }
