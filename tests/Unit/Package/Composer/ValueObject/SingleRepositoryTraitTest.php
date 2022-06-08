@@ -56,6 +56,14 @@ class SingleRepositoryTraitTest extends AbstractRepositoryTest
         );
     }
 
+    public function test_get_root_directory(): void
+    {
+        $this->assertEquals(
+            self::ROOT_DIRECTORY,
+            $this->repository->getRootDirectory()
+        );
+    }
+
     private function createInstance(): SingleRepositoryInterface
     {
         return SingleRepositoryTraitImplementation::create(

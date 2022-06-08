@@ -23,6 +23,11 @@ trait SingleRepositoryTrait
         return new self($url, $package);
     }
 
+    public function getRootDirectory(): string
+    {
+        return dirname($this->getUrl());
+    }
+
     public function getComposerFilePath(): string
     {
         return $this->getUrl() . DIRECTORY_SEPARATOR . SingleRepositoryInterface::COMPOSER_FILE_NAME;
