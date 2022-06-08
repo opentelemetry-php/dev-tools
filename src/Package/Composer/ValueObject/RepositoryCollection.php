@@ -14,40 +14,40 @@ class RepositoryCollection extends ArrayObject
         return new self($array, $flags, $iteratorClass);
     }
 
-    public function offsetExists($offset): bool
+    public function offsetExists($key): bool
     {
-        self::ensureOffsetType($offset);
+        self::ensureOffsetType($key);
 
-        return parent::offsetExists($offset);
+        return parent::offsetExists($key);
     }
 
-    public function offsetGet($offset): RepositoryInterface
+    public function offsetGet($key): RepositoryInterface
     {
-        self::ensureOffsetType($offset);
+        self::ensureOffsetType($key);
 
-        return parent::offsetGet($offset);
+        return parent::offsetGet($key);
     }
 
-    public function offsetSet($offset, $value): void
+    public function offsetSet($key, $value): void
     {
-        self::ensureOffsetType($offset);
+        self::ensureOffsetType($key);
         self::ensureValueType($value);
 
-        parent::offsetSet($offset, $value);
+        parent::offsetSet($key, $value);
     }
 
-    public function offsetUnset($offset): void
+    public function offsetUnset($key): void
     {
-        self::ensureOffsetType($offset);
+        self::ensureOffsetType($key);
 
-        parent::offsetUnset($offset);
+        parent::offsetUnset($key);
     }
 
-    private static function ensureOffsetType($offset): void
+    private static function ensureOffsetType($key): void
     {
-        if (!is_string($offset)) {
+        if (!is_string($key)) {
             throw new InvalidArgumentException(
-                sprintf('Offset must be of type string. Given "%s".', gettype($offset))
+                sprintf('Offset must be of type string. Given "%s".', gettype($key))
             );
         }
     }
