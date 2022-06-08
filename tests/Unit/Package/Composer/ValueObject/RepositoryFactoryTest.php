@@ -140,8 +140,8 @@ class RepositoryFactoryTest extends AbstractRepositoryTest
         foreach ($this->provideRepositoryTypes() as $typeConfig) {
             [$type] = $typeConfig;
             $config = [];
-            foreach (PackageInterface::ATTRIBUTES as $missing) {
-                foreach (PackageInterface::ATTRIBUTES as $attribute) {
+            foreach (PackageInterface::MANDATORY_ATTRIBUTES as $missing) {
+                foreach (PackageInterface::MANDATORY_ATTRIBUTES as $attribute) {
                     $config[$attribute] = 'foo';
                 }
                 unset($config[$missing]);

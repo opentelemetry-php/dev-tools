@@ -135,7 +135,7 @@ class RepositoryFactory
             throw new InvalidArgumentException('Package config must be an array');
         }
 
-        foreach (PackageInterface::ATTRIBUTES as $attribute) {
+        foreach (PackageInterface::MANDATORY_ATTRIBUTES as $attribute) {
             if (!isset($config[$attribute])) {
                 throw new InvalidArgumentException(
                     sprintf('Attribute "%s" not found in package config', $attribute)
