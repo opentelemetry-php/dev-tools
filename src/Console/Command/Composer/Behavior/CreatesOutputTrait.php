@@ -57,7 +57,7 @@ trait CreatesOutputTrait
 
     protected function writeRedLine(OutputInterface $output, string $message, int $options = 0): void
     {
-        $this->writeColoredLine($output, $message, 'green', $options);
+        $this->writeColoredLine($output, $message, 'red', $options);
     }
 
     protected function writeOk(OutputInterface $output, string $prefix = '', int $options = 0): void
@@ -80,7 +80,7 @@ trait CreatesOutputTrait
 
         if ($throwable->getPrevious()) {
             $this->writeSeparator($output, $options);
-            $this->writeSingleLine($output, '- PREVIOUS TRACE:', $options);
+            $this->writeSingleLine($output, '- PREVIOUS TRACE: ' . $throwable->getPrevious()->getMessage(), $options);
             $this->writeSingleLine($output, '- ' . $throwable->getPrevious()->getTraceAsString(), $options);
         }
         $this->writeBlankLine($output, $options);
