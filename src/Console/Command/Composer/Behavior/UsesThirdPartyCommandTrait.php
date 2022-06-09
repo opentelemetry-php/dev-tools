@@ -30,7 +30,8 @@ trait UsesThirdPartyCommandTrait
         return $this->runCommand(
             $this->createCommand($commandClass),
             $input,
-            $output
+            $output,
+            $workingDirectory
         );
     }
 
@@ -43,21 +44,19 @@ trait UsesThirdPartyCommandTrait
         try {
             $oldWorkingDir = WorkingDirectoryResolver::create()->resolve();
 
-            if (is_string($workingDirectory)) {
+            if (is_dir($workingDirectory) && is_dir($workingDirectory)) {
                 chdir($workingDirectory);
             }
 
-            $res =  $command->run($input, $output);
-
-            chdir($oldWorkingDir);
-
-            return $res;
+            return $command->run($input, $output);
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Failed to run command "%s". Error: "%s" ', get_class($command), $t->getMessage()),
                 $t->getCode(),
                 $t
             );
+        } finally {
+            chdir($oldWorkingDir);
         }
     }
 

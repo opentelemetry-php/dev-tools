@@ -23,14 +23,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class UsesThirdPartyCommandTraitTest extends TestCase
 {
-    private const NON_CLASS_TYPE_VALUES = [
-        321,
-        3.21,
-        'foo',
-        [],
-        null,
-    ];
-
     private object $instance;
     private Application $application;
 
@@ -126,6 +118,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 TestCommand::class,
                 $this->createInputInterfaceMock(),
                 $this->createOutputInterfaceMock(),
+                '.'
             )
         );
     }
