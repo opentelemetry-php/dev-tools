@@ -12,11 +12,10 @@ use OpenTelemetry\DevTools\Package\Composer\TestConfig;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallation;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
-use PHPUnit\Framework\TestCase;
 use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamDirectory;
+use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use stdClass;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\TestInstallation
@@ -140,7 +139,7 @@ class TestInstallationTest extends TestCase
 
         $this->assertSame(
             self::TEST_CONFIG,
-            json_decode((string)$this->instance, true, 512, JSON_THROW_ON_ERROR)
+            json_decode((string) $this->instance, true, 512, JSON_THROW_ON_ERROR)
         );
     }
 
