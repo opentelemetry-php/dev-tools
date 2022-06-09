@@ -87,7 +87,8 @@ class ValidatePackagesCommand extends Command
             ]),
             new ConsoleOutput(
                 OutputInterface::VERBOSITY_DEBUG
-            )
+            ),
+            WorkingDirectoryResolver::create()->resolve()
         );
     }
 }
