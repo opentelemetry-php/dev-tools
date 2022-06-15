@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer;
 
-
-use Generator;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
+use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolver;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\PackageFactory;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\PackageInterface;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryFactory;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
-use OpenTelemetry\DevTools\Util\PhpTypes;
-use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
+use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 use org\bovigo\vfs\vfsStream;
 use PHPUnit\Framework\TestCase;
-use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 
 /**
  * @covers \OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver
@@ -62,7 +56,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
         )->resolve();
 
         foreach (self::COMPOSER_FILE_PATHS as $path) {
-            $this->assertArrayHasKey($path,$collection);
+            $this->assertArrayHasKey($path, $collection);
         }
     }
 
@@ -71,15 +65,27 @@ class MultiRepositoryInfoResolverTest extends TestCase
         $collection = $this->createInstance()->resolve();
 
         foreach (self::COMPOSER_FILE_PATHS as $path) {
-            $this->assertArrayHasKey($path,$collection);
+            $this->assertArrayHasKey($path, $collection);
         }
+    }
+
+    public function test_working_directory_accessors(): void
+    {
+        $directory = 'foo://bar';
+
+        $instance = $this->createInstance();
+        $instance->setWorkingDirectory($directory);
+
+        $this->assertSame(
+            $directory,
+            $instance->getWorkingDirectory()
+        );
     }
 
     private function createInstance(
         ?PackageAttributeResolverFactory $resolverFactory = null,
         ?RepositoryFactory $repositoryFactory = null
-    ): MultiRepositoryInfoResolver
-    {
+    ): MultiRepositoryInfoResolver {
         return MultiRepositoryInfoResolver::create(
             $this->createConfigResolverInterfaceMock(),
             $resolverFactory,
@@ -105,7 +111,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
 
         $mock->method('build')
             ->willReturnCallback(
-                function(string $composerFile) {
+                function (string $composerFile) {
                     return $this->createPackageAttributeResolverMock($composerFile);
                 }
             );
@@ -126,7 +132,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
 
         $mock->method('resolve')
             ->willReturnCallback(
-                function(string $attribute) use($config) {
+                function (string $attribute) use ($config) {
                     return $config[$attribute] ?? '';
                 }
             );
@@ -139,7 +145,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
         $mock = $this->createMock(RepositoryFactory::class);
 
         $mock->method('buildSingleRepository')
-            ->willReturnCallback(function(string $url, string $type, string $packageName, string $packageType){
+            ->willReturnCallback(function (string $url, string $type, string $packageName, string $packageType) {
                 return $this->createSingleRepositoryInterfaceMock(
                     $url,
                     $type,

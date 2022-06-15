@@ -10,18 +10,21 @@ use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryFactory;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
 use OpenTelemetry\DevTools\Util\PhpTypes;
+use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 
 class MultiRepositoryInfoResolver
 {
     private ConfigResolverInterface $configResolver;
     private PackageAttributeResolverFactory $packageAttributeResolverFactory;
     private RepositoryFactory $repositoryFactory;
+    private string $workingDirectory;
     private array $packageAttributeResolvers = [];
 
     public function __construct(
         ConfigResolverInterface $configResolver,
         ?PackageAttributeResolverFactory $packageAttributeResolverFactory = null,
-        ?RepositoryFactory $repositoryFactory = null
+        ?RepositoryFactory $repositoryFactory = null,
+        ?string $workingDirectory = null
     ) {
         $this->configResolver = $configResolver;
         $this->packageAttributeResolverFactory = $packageAttributeResolverFactory
@@ -30,14 +33,16 @@ class MultiRepositoryInfoResolver
             ?? RepositoryFactory::create(
                 PackageFactory::create()
             );
+        $this->workingDirectory = $workingDirectory ?? WorkingDirectoryResolver::create()->resolve();
     }
 
     public static function create(
         ConfigResolverInterface $configResolver,
         ?PackageAttributeResolverFactory $packageAttributeResolverFactory,
-        ?RepositoryFactory $repositoryFactory = null
+        ?RepositoryFactory $repositoryFactory = null,
+        ?string $workingDirectory = null
     ): MultiRepositoryInfoResolver {
-        return new self($configResolver, $packageAttributeResolverFactory, $repositoryFactory);
+        return new self($configResolver, $packageAttributeResolverFactory, $repositoryFactory, $workingDirectory);
     }
 
     public function resolve(): RepositoryCollection
@@ -49,6 +54,16 @@ class MultiRepositoryInfoResolver
         }
 
         return $collection;
+    }
+
+    public function setWorkingDirectory(string $workingDirectory): void
+    {
+        $this->workingDirectory = $workingDirectory;
+    }
+
+    public function getWorkingDirectory(): string
+    {
+        return $this->workingDirectory;
     }
 
     private function doResolve(): Generator
@@ -95,6 +110,10 @@ class MultiRepositoryInfoResolver
 
     private function getRepositoryPath(string $composerFile): string
     {
-        return dirname($composerFile);
+        return sprintf(
+            '%s/%s',
+            $this->workingDirectory,
+            dirname($composerFile)
+        );
     }
 }

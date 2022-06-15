@@ -8,6 +8,9 @@ use OpenTelemetry\DevTools\Console\Application\Application;
 use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \OpenTelemetry\DevTools\Console\Application\Application
+ */
 class ApplicationTest extends TestCase
 {
     private const COMMAND_CLASSES = [

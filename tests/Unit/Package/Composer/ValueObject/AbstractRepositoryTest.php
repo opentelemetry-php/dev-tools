@@ -12,7 +12,8 @@ abstract class AbstractRepositoryTest extends TestCase
     use UsesPackageInterfaceMockTrait;
 
     public const REPOSITORY_TYPE = 'path';
-    public const REPOSITORY_URL = 'src/library';
+    public const ROOT_DIRECTORY = 'src';
+    public const REPOSITORY_URL = self::ROOT_DIRECTORY . '/library';
     public const ATTRIBUTES = [
         RepositoryInterface::TYPE_ATTRIBUTE => self::REPOSITORY_TYPE,
         RepositoryInterface::URL_ATTRIBUTE => self::REPOSITORY_URL,

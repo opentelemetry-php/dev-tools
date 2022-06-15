@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Package\Composer\ValueObject;
 
-use ArrayObject;
 use ArrayIterator;
+use ArrayObject;
 use InvalidArgumentException;
 
 abstract class AbstractCollection extends ArrayObject implements CollectionInterface

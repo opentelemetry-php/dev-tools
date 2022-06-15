@@ -8,6 +8,8 @@ interface SingleRepositoryInterface extends RepositoryInterface
 {
     public const COMPOSER_FILE_NAME = 'composer.json';
 
+    public function getRootDirectory(): string;
+
     public function getComposerFilePath(): string;
 
     public function getPackage(): PackageInterface;

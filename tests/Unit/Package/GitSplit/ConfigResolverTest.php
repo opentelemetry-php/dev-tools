@@ -11,6 +11,9 @@ use org\bovigo\vfs\vfsStream;
 use org\bovigo\vfs\vfsStreamFile;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * @covers \OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver
+ */
 class ConfigResolverTest extends TestCase
 {
     use UsesVfsTrait;

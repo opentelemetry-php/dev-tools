@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer\ValueObject;
 
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\DependencyInterface;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\DependencyCollection;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\DependencyInterface;
 use PHPUnit\Framework\TestCase;
 
 /**

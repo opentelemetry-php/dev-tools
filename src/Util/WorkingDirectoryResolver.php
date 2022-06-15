@@ -18,11 +18,8 @@ class WorkingDirectoryResolver
 
     public function resolve(): string
     {
-
         if (!isset($this->workingDirectory)) {
-            $this->workingDirectory = self::callGetCwd() !== false
-                ? self::callGetCwd()
-                : self::callRealPath();
+            $this->workingDirectory = self::callGetCwd() !== false ? self::callGetCwd() : self::callRealPath();
         }
 
         return $this->workingDirectory;
