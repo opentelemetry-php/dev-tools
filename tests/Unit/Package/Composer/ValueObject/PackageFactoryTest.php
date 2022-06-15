@@ -24,6 +24,7 @@ class PackageFactoryTest extends TestCase
 
     /**
      * @dataProvider providePackageType
+     * @psalm-param class-string $class
      */
     public function test_create_specific_packages(string $type, string $class): void
     {

@@ -52,7 +52,7 @@ trait UsesThirdPartyCommandTrait
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Failed to run command "%s". Error: "%s" ', get_class($command), $t->getMessage()),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         } finally {
@@ -60,6 +60,9 @@ trait UsesThirdPartyCommandTrait
         }
     }
 
+    /**
+     * @psalm-suppress ArgumentTypeCoercion
+     */
     protected function createCommand(string $commandClass): Command
     {
         self::ensureCommandClass($commandClass);
@@ -100,7 +103,10 @@ trait UsesThirdPartyCommandTrait
     {
         return new ComposerApplication();
     }
-
+    /**
+     * @template T of Command
+     * @psalm-param class-string<T> $commandClass
+     */
     protected static function ensureCommandClass(string $commandClass): void
     {
         try {
@@ -120,7 +126,7 @@ trait UsesThirdPartyCommandTrait
                     'Could not validate class "%s"."',
                     $commandClass
                 ),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         }

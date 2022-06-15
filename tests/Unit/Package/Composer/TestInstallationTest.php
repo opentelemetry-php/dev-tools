@@ -105,6 +105,7 @@ class TestInstallationTest extends TestCase
 
     /**
      * @throws JsonException
+     * @psalm-suppress UndefinedMethod
      */
     public function test_to_json(): void
     {
@@ -119,6 +120,9 @@ class TestInstallationTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_to_json_throws_exception_on_invalid_json(): void
     {
         /** @phpstan-ignore-next-line */
@@ -135,6 +139,7 @@ class TestInstallationTest extends TestCase
 
     /**
      * @throws JsonException
+     * @psalm-suppress UndefinedMethod
      */
     public function test_to_string(): void
     {
@@ -149,6 +154,9 @@ class TestInstallationTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_composer_file(): void
     {
         $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;
@@ -172,6 +180,9 @@ class TestInstallationTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_composer_file_throws_exception_on_file_write_error(): void
     {
         $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;

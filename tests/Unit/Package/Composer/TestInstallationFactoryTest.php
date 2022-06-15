@@ -32,6 +32,9 @@ class TestInstallationFactoryTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_build(): void
     {
         $config = $this->createMock(TestConfig::class);
@@ -81,6 +84,9 @@ class TestInstallationFactoryTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_add_default_dependency(): void
     {
         /** @phpstan-ignore-next-line */

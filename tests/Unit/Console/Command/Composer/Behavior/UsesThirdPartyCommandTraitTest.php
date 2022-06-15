@@ -123,6 +123,9 @@ class UsesThirdPartyCommandTraitTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     private function getApplication(): Application
     {
         return $this->application ?? $this->application = $this->createApplication();
@@ -191,6 +194,9 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 $this->addComposer($command);
             }
 
+            /**
+             * @psalm-suppress ArgumentTypeCoercion
+             */
             public function doEnsureCommandClass(string $commandClass)
             {
                 /** @phpstan-ignore-next-line */

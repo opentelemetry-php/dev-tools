@@ -90,7 +90,7 @@ class TestInstallation
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Could not write config to %s', $this->getTestedRepository()->getComposerFilePath()),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         }
@@ -103,7 +103,7 @@ class TestInstallation
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Could not serialize "%s"', __CLASS__),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         }

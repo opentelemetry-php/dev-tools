@@ -14,11 +14,6 @@ class WorkingDirectoryResolverTest extends TestCase
 {
     private const TEST_WORKING_DIRECTORY = __DIR__ . '/../../../';
 
-    public function __construct(?string $name = null, array $data = [], $dataName = '')
-    {
-        parent::__construct($name, $data, $dataName);
-    }
-
     public function tearDown(): void
     {
         WorkingDirectoryResolver::setCwdTestResponse(null);

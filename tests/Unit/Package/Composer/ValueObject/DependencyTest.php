@@ -57,6 +57,9 @@ class DependencyTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     private function getPackage(): PackageInterface
     {
         return $this->package ?? $this->package = $this->createPackageInterfaceMock();

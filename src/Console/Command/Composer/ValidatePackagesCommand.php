@@ -41,7 +41,7 @@ class ValidatePackagesCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->writeBlankLine($output);
-        $this->writeHeadline($output, $this->getName());
+        $this->writeHeadline($output, $this->getName() ?? self::NAME);
         $this->writeComment($output, 'Validating composer files in: ');
         $this->writeComment($output, WorkingDirectoryResolver::create()->resolve());
         $this->writeSeparator($output);

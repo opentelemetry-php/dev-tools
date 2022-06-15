@@ -38,7 +38,7 @@ class TestInstaller
 
             return true;
         } catch (Throwable $e) {
-            throw new InvalidArgumentException('Could not install: ' . $e->getMessage(), $e->getCode(), $e);
+            throw new InvalidArgumentException('Could not install: ' . $e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 
@@ -53,7 +53,7 @@ class TestInstaller
 
             return true;
         } catch (Throwable $e) {
-            throw new InvalidArgumentException('Could not remove: ' . $e->getMessage(), $e->getCode(), $e);
+            throw new InvalidArgumentException('Could not remove: ' . $e->getMessage(), (int) $e->getCode(), $e);
         }
     }
 

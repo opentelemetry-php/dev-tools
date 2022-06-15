@@ -16,10 +16,13 @@ class WorkingDirectoryResolver
         return new self();
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     public function resolve(): string
     {
         if (!isset($this->workingDirectory)) {
-            $this->workingDirectory = self::callGetCwd() !== false ? self::callGetCwd() : self::callRealPath();
+            $this->workingDirectory = self::callGetCwd() !== false ? (string) self::callGetCwd() : self::callRealPath();
         }
 
         return $this->workingDirectory;
@@ -31,7 +34,7 @@ class WorkingDirectoryResolver
     }
 
     /**
-     * @return false|string
+     * @return bool|string
      */
     private static function callGetCwd()
     {

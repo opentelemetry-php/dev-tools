@@ -40,6 +40,7 @@ class RepositoryFactoryTest extends AbstractRepositoryTest
 
     /**
      * @dataProvider provideRepositoryTypes
+     * @psalm-param class-string $class
      */
     public function test_build_specific_repositories(string $type, string $class): void
     {
@@ -163,6 +164,9 @@ class RepositoryFactoryTest extends AbstractRepositoryTest
         return $mock;
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     private function getPackage(): PackageInterface
     {
         return $this->package ?? $this->package = $this->createPackageInterfaceMock();

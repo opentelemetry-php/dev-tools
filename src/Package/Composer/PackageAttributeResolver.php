@@ -64,6 +64,9 @@ class PackageAttributeResolver
         return $value;
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     private function getConfig(): array
     {
         try {
@@ -76,7 +79,7 @@ class PackageAttributeResolver
         } catch (\Throwable $t) {
             throw new InvalidArgumentException(
                 sprintf('Could not JSON decode composer file at: %s', $this->composerFilePath),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         }

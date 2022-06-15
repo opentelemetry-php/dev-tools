@@ -38,7 +38,7 @@ class RepositoryFactory
             : $this->buildRepository($url, $type, $packages);
     }
 
-    public function buildRepository(string $url, string $type, array $packages = []): MultiRepositoryInterface
+    public function buildRepository(string $url, string $type, array $packages = []): RepositoryInterface
     {
         self::ensureType($type);
 
@@ -62,6 +62,8 @@ class RepositoryFactory
 
     /**
      * @suppress PhanTypeMismatchArgumentReal
+     * @psalm-suppress InvalidReturnType
+     * @psalm-suppress InvalidReturnStatement
      */
     public function buildSingleRepository(string $url, string $type, string $packageName, string $packageType): SingleRepositoryInterface
     {

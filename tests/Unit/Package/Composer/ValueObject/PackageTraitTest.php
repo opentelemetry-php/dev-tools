@@ -29,6 +29,9 @@ class PackageTraitTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedInterfaceMethod
+     */
     public function test_set_dependencies(): void
     {
         $instance = $this->createInstance();

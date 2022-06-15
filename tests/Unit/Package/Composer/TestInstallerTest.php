@@ -44,6 +44,9 @@ class TestInstallerTest extends TestCase
         TestInstaller::setDirectoryRemover(null);
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_install(): void
     {
         $composerDirectory = self::TEST_DIR;
@@ -87,6 +90,9 @@ class TestInstallerTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_install_throws_exception_when_not_able_to_create_install_directory(): void
     {
         $this->expectException(InvalidArgumentException::class);

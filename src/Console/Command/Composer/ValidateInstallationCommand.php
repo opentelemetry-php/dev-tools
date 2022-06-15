@@ -13,7 +13,9 @@ use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
 use OpenTelemetry\DevTools\Package\Composer\TestInstaller;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\LocalRepository;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
+
+;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -197,6 +199,9 @@ class ValidateInstallationCommand extends Command
         return $this->installationDirectory . DIRECTORY_SEPARATOR . str_replace('/', '_', dirname($composerFilePath));
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     protected function getPackageInfos(): RepositoryCollection
     {
         return $this->packageInfos ?? $this->packageInfos = $this->resolver->resolve();
@@ -274,7 +279,7 @@ class ValidateInstallationCommand extends Command
     private function writeIntro(OutputInterface $output): void
     {
         $this->writeBlankLine($output);
-        $this->writeHeadline($output, $this->getName());
+        $this->writeHeadline($output, $this->getName() ?? self::NAME);
         $this->writeComment($output, 'Trying to install packages from: ');
         $this->writeComment($output, $this->workingDirectory);
         $this->writeSeparator($output);

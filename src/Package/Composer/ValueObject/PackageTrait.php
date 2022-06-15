@@ -9,7 +9,7 @@ trait PackageTrait
     use ValueObjectTrait;
 
     private string $name;
-    private DependencyCollection $dependencies;
+    private ?DependencyCollection $dependencies;
 
     public function getName(): string
     {
@@ -23,6 +23,9 @@ trait PackageTrait
         $this->dependencies = $dependencies;
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     public function getDependencies(): DependencyCollection
     {
         return $this->dependencies ?? $this->dependencies = DependencyCollection::create();
