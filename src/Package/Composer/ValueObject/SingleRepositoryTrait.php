@@ -18,9 +18,12 @@ trait SingleRepositoryTrait
         $this->setType();
     }
 
+    /**
+     * @suppress PhanTypeInstantiateTraitStaticOrSelf
+     */
     public static function create(string $url, PackageInterface $package): self
     {
-        return new self($url, $package);
+        return new static($url, $package);
     }
 
     public function getRootDirectory(): string

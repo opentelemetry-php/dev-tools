@@ -44,7 +44,7 @@ trait UsesThirdPartyCommandTrait
         try {
             $oldWorkingDir = WorkingDirectoryResolver::create()->resolve();
 
-            if (is_dir($workingDirectory) && is_dir($workingDirectory)) {
+            if (is_string($workingDirectory) && is_dir($workingDirectory)) {
                 chdir($workingDirectory);
             }
 

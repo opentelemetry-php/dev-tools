@@ -59,6 +59,9 @@ class RepositoryFactory
         );
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgumentReal
+     */
     public function buildSingleRepository(string $url, string $type, string $packageName, string $packageType): SingleRepositoryInterface
     {
         self::ensureType($type);
