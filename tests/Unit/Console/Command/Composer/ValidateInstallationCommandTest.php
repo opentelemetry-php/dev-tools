@@ -21,10 +21,6 @@ use Symfony\Component\Console\Tester\CommandTester;
  */
 class ValidateInstallationCommandTest extends TestCase
 {
-    private const VALID_COMPOSER_FILE = __DIR__ . '/_files/composer.valid.json';
-    private const INVALID_COMPOSER_FILE = __DIR__ . '/_files/composer.invalid.json';
-    private const BROKEN_COMPOSER_FILE = __DIR__ . '/_files/composer.broken.json';
-
     private const PACKAGE_OPTION = '--' . ValidateInstallationCommand::PACKAGE_OPTION_NAME;
     private const DIRECTORY_OPTION = '--' . ValidateInstallationCommand::DIRECTORY_OPTION_NAME;
     private const BRANCH_OPTION = '--' . ValidateInstallationCommand::BRANCH_OPTION_NAME;
