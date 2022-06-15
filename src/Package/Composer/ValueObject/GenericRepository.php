@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Package\Composer\ValueObject;
 
-class GenericRepository implements RepositoryInterface
+class GenericRepository implements MultiRepositoryInterface
 {
     use RepositoryTrait;
 
