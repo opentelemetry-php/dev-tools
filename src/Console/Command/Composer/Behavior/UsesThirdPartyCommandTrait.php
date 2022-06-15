@@ -41,9 +41,9 @@ trait UsesThirdPartyCommandTrait
         OutputInterface $output,
         string $workingDirectory = null
     ): int {
-        try {
-            $oldWorkingDir = WorkingDirectoryResolver::create()->resolve();
+        $oldWorkingDir = WorkingDirectoryResolver::create()->resolve();
 
+        try {
             if (is_string($workingDirectory) && is_dir($workingDirectory)) {
                 chdir($workingDirectory);
             }

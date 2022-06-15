@@ -33,7 +33,7 @@ class TestConfigTest extends TestCase
         ConfigAttributes::TYPE => 'foo type',
         ConfigAttributes::LICENSE => 'foo license',
         ConfigAttributes::MINIMUM_STABILITY => 'test',
-        ConfigAttributes::PREFER_STABLE => !TestConfig::DEFAULT_PREFER_STABLE,
+        ConfigAttributes::PREFER_STABLE => false,
         ConfigAttributes::AUTOLOAD => [
             ConfigAttributes::PSR4 => [
                 'Foo\\Bar\\' => 'src/Foo/Bar',

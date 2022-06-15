@@ -23,6 +23,7 @@ trait SingleRepositoryTrait
      */
     public static function create(string $url, PackageInterface $package): self
     {
+        /** @phpstan-ignore-next-line */
         return new static($url, $package);
     }
 

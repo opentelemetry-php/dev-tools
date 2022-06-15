@@ -38,7 +38,7 @@ class RepositoryFactory
             : $this->buildRepository($url, $type, $packages);
     }
 
-    public function buildRepository(string $url, string $type, array $packages = []): RepositoryInterface
+    public function buildRepository(string $url, string $type, array $packages = []): MultiRepositoryInterface
     {
         self::ensureType($type);
 
@@ -49,9 +49,10 @@ class RepositoryFactory
         }
 
         $repositoryClass = self::TYPES[$type];
-
+        /** @phpstan-ignore-next-line */
         return new $repositoryClass(
             $url,
+            /** @phpstan-ignore-next-line */
             $type,
             $this->buildPackages(
                 $packages
@@ -76,6 +77,7 @@ class RepositoryFactory
 
         return new $repositoryClass(
             $url,
+            /** @phpstan-ignore-next-line */
             $this->buildPackage(
                 $packageName,
                 $packageType

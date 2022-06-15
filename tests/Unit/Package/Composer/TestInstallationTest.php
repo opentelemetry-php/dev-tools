@@ -108,7 +108,9 @@ class TestInstallationTest extends TestCase
      */
     public function test_to_json(): void
     {
-        $this->config->method('toArray')
+        /** @phpstan-ignore-next-line */
+        $this->config
+            ->method('toArray')
             ->willReturn(self::TEST_CONFIG);
 
         $this->assertSame(
@@ -119,7 +121,9 @@ class TestInstallationTest extends TestCase
 
     public function test_to_json_throws_exception_on_invalid_json(): void
     {
-        $this->config->method('toArray')
+        /** @phpstan-ignore-next-line */
+        $this->config
+            ->method('toArray')
             ->willThrowException(
                 new Exception()
             );
@@ -134,7 +138,9 @@ class TestInstallationTest extends TestCase
      */
     public function test_to_string(): void
     {
-        $this->config->method('toArray')
+        /** @phpstan-ignore-next-line */
+        $this->config
+            ->method('toArray')
             ->willReturn(self::TEST_CONFIG);
 
         $this->assertSame(
@@ -146,10 +152,14 @@ class TestInstallationTest extends TestCase
     public function test_write_composer_file(): void
     {
         $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;
-        $this->repository->method('getComposerFilePath')
+        /** @phpstan-ignore-next-line */
+        $this->repository
+            ->method('getComposerFilePath')
             ->willReturn($composerPath);
 
-        $this->config->method('toArray')
+        /** @phpstan-ignore-next-line */
+        $this->config
+            ->method('toArray')
             ->willReturn(self::TEST_CONFIG);
 
         $this->instance->writeComposerFile();
@@ -165,12 +175,15 @@ class TestInstallationTest extends TestCase
     public function test_write_composer_file_throws_exception_on_file_write_error(): void
     {
         $composerPath = $this->testDirectory . DIRECTORY_SEPARATOR . TestInstallation::COMPOSER_FILE_NAME;
+        /** @phpstan-ignore-next-line */
         $this->repository->method('getComposerFilePath')
             ->willReturn('foo://bar.baz');
 
         $this->expectException(RuntimeException::class);
 
-        $this->config->method('toArray')
+        /** @phpstan-ignore-next-line */
+        $this->config
+            ->method('toArray')
             ->willReturn(self::TEST_CONFIG);
 
         $this->instance->writeComposerFile();

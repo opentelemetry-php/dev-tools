@@ -13,8 +13,7 @@ use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
 use OpenTelemetry\DevTools\Package\Composer\TestInstaller;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\LocalRepository;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
-use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
-use OpenTelemetry\DevTools\Util\RecursiveDirectoryRemover;
+use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -51,8 +50,6 @@ class ValidateInstallationCommand extends Command
         '--no-interaction' => true,
         '--no-plugins' => true,
     ];
-
-    private static RecursiveDirectoryRemover $directoryRemover;
 
     private MultiRepositoryInfoResolver $resolver;
     private TestInstallationFactory $testInstallationFactory;

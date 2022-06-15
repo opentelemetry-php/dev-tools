@@ -80,6 +80,7 @@ class AbstractCollectionTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
+        /** @phpstan-ignore-next-line */
         isset($this->instance[$offset]);
     }
 
@@ -90,6 +91,7 @@ class AbstractCollectionTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
+        /** @phpstan-ignore-next-line */
         $this->instance[$offset];
     }
 

@@ -10,8 +10,6 @@ class LibraryPackage implements PackageInterface
 {
     use PackageTrait;
 
-    private const TYPE_VALUE = 'path';
-
     public function __construct(string $name)
     {
         $this->name = $name;

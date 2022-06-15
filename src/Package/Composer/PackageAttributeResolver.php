@@ -64,9 +64,6 @@ class PackageAttributeResolver
         return $value;
     }
 
-    /**
-     * @return mixed
-     */
     private function getConfig(): array
     {
         try {

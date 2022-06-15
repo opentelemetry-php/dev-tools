@@ -39,6 +39,7 @@ class PackageTraitTest extends TestCase
         $dependencies = $this->createMock(DependencyCollection::class);
         $dependencies->method('toArray')
             ->willReturn($data);
+        /** @phpstan-ignore-next-line */
         $instance->setDependencies($dependencies);
 
         $this->assertSame(

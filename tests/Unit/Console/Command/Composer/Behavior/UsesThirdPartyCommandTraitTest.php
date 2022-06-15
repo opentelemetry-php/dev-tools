@@ -193,6 +193,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
 
             public function doEnsureCommandClass(string $commandClass)
             {
+                /** @phpstan-ignore-next-line */
                 return self::ensureCommandClass($commandClass);
             }
 

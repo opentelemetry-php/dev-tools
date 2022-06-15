@@ -51,6 +51,7 @@ class TestInstallerTest extends TestCase
             ->at($this->root)
             ->url();
 
+        /** @phpstan-ignore-next-line */
         $this->directoryRemover->method('remove')
             ->willReturnCallback(function () use ($testDirectory) {
                 rmdir($testDirectory);
@@ -94,7 +95,8 @@ class TestInstallerTest extends TestCase
             ->at($this->root);
         $this->root->chown(12345);
         $this->root->chmod(0700);
-        
+
+        /** @phpstan-ignore-next-line */
         $this->directoryRemover->method('remove')
             ->willReturn(true);
 

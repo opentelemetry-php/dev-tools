@@ -35,7 +35,9 @@ class TestInstallationFactoryTest extends TestCase
     public function test_build(): void
     {
         $config = $this->createMock(TestConfig::class);
-        $this->testConfigFactory->method('build')
+        /** @phpstan-ignore-next-line */
+        $this->testConfigFactory
+            ->method('build')
             ->willReturn($config);
 
         $testedRepository = $this->createMock(SingleRepositoryInterface::class);
@@ -81,7 +83,9 @@ class TestInstallationFactoryTest extends TestCase
 
     public function test_add_default_dependency(): void
     {
-        $this->testConfigFactory->expects($this->once())
+        /** @phpstan-ignore-next-line */
+        $this->testConfigFactory
+            ->expects($this->once())
             ->method('addDefaultDependency');
 
         $this->instance->addDefaultDependency('foo', 'bar');
