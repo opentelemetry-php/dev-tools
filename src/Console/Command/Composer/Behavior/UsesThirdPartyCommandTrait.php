@@ -103,9 +103,9 @@ trait UsesThirdPartyCommandTrait
     {
         return new ComposerApplication();
     }
+
     /**
-     * @template T of Command
-     * @psalm-param class-string<T> $commandClass
+     * @psalm-param class-string $commandClass
      */
     protected static function ensureCommandClass(string $commandClass): void
     {
