@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Console\Application;
 
+use OpenTelemetry\DevTools\Console\Command\Composer\ValidateInstallationCommand;
 use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
-use OpenTelemetry\DevTools\Package\Composer\GitSplitConfigResolver;
+use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
+use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
+use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
 use Symfony\Component\Console\Application as BaseApplication;
 
 class Application extends BaseApplication
@@ -23,7 +26,13 @@ class Application extends BaseApplication
     {
         $this->addCommands([
             new ValidatePackagesCommand(
-                new GitSplitConfigResolver()
+                new ConfigResolver()
+            ),
+            new ValidateInstallationCommand(
+                new MultiRepositoryInfoResolver(
+                    new ConfigResolver(),
+                    new PackageAttributeResolverFactory()
+                )
             ),
         ]);
     }

@@ -1,6 +1,6 @@
 {
     "name": "open-telemetry/dev-tools",
-    "type": "package",
+    "type": "library",
     "description": "Development tools for OpenTelemetry PHP.",
     "authors": [
         {
@@ -30,7 +30,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "OpenTelemetry\\DevTools\\Test\\": "tests/"
+            "OpenTelemetry\\DevTools\\Tests\\": "tests"
         }
     },
     "require-dev": {

@@ -10,6 +10,9 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
+/**
+ * @covers \OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand
+ */
 class ValidatePackagesCommandTest extends TestCase
 {
     private const VALID_COMPOSER_FILE = __DIR__ . '/_files/composer.valid.json';

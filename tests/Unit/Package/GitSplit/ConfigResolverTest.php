@@ -2,17 +2,22 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Tests\Unit\Package\Composer;
+namespace OpenTelemetry\DevTools\Tests\Unit\Package\GitSplit;
 
 use InvalidArgumentException;
-use OpenTelemetry\DevTools\Package\Composer\GitSplitConfigResolver;
+use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
+use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 use org\bovigo\vfs\vfsStream;
-use org\bovigo\vfs\vfsStreamDirectory;
 use org\bovigo\vfs\vfsStreamFile;
 use PHPUnit\Framework\TestCase;
 
-class GitSplitConfigResolverTest extends TestCase
+/**
+ * @covers \OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver
+ */
+class ConfigResolverTest extends TestCase
 {
+    use UsesVfsTrait;
+
     private const ROOT_DIR = 'root';
     private const GITSPLIT_FILE = '.gitsplit.yml';
     private const GITSPLIT_CONFIG_PATH = self::ROOT_DIR . '/' . self::GITSPLIT_FILE;
@@ -22,16 +27,14 @@ class GitSplitConfigResolverTest extends TestCase
         'C' => 'src/C',
     ];
 
-    private vfsStreamDirectory $root;
-
     public function setUp(): void
     {
-        $this->root = vfsStream::setup(self::ROOT_DIR);
+        $this->setUpVcs();
     }
 
     public function test_resolve(): void
     {
-        $resolver = new GitSplitConfigResolver(
+        $resolver = new ConfigResolver(
             $this->getConfigFile(
                 $this->getConfigContent()
             )->url()
@@ -45,7 +48,7 @@ class GitSplitConfigResolverTest extends TestCase
 
     public function test_resolve_paths_with_trailing_slash(): void
     {
-        $resolver = new GitSplitConfigResolver(
+        $resolver = new ConfigResolver(
             $this->getConfigFile(
                 $this->getConfigContentWithTrailingSlash()
             )->url()
@@ -59,7 +62,7 @@ class GitSplitConfigResolverTest extends TestCase
 
     public function test_resolve_paths_with_no_split_config(): void
     {
-        $resolver = new GitSplitConfigResolver(
+        $resolver = new ConfigResolver(
             $this->getConfigFile(
                 $this->getConfigContentWithNoSplitConfig()
             )->url()
@@ -74,7 +77,7 @@ class GitSplitConfigResolverTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
 
-        (new GitSplitConfigResolver(
+        (new ConfigResolver(
             $this->getConfigFile(
                 $this->getInvalidYamlConfig()
             )->url()
@@ -87,7 +90,7 @@ class GitSplitConfigResolverTest extends TestCase
 
         $this->assertSame(
             "$basePath/" . self::GITSPLIT_FILE,
-            (new GitSplitConfigResolver())->getDefaultConfigPath()
+            (new ConfigResolver())->getDefaultConfigPath()
         );
     }
 
