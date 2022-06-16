@@ -182,6 +182,7 @@ class ValidateInstallationCommand extends Command
         $this->writeSeparator($output);
         $this->writeBlankLine($output);
 
+        $this->testInstaller->setRootDirectory($this->installationDirectory);
         $this->testInstaller->install($installation);
 
         $res = $this->runUpdateCommand(
@@ -196,7 +197,7 @@ class ValidateInstallationCommand extends Command
 
     private function getInstallDirectory(string $composerFilePath): string
     {
-        return $this->installationDirectory . DIRECTORY_SEPARATOR . str_replace('/', '_', dirname($composerFilePath));
+        return str_replace('/', '_', dirname($composerFilePath));
     }
 
     /**
