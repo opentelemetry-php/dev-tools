@@ -34,6 +34,8 @@ class TestInstaller
 
             self::createDirectory($testDirectory);
 
+            echo PHP_EOL."Creating: $testDirectory".PHP_EOL;
+
             $installation->writeComposerFile();
 
             return true;
