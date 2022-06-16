@@ -83,11 +83,6 @@ class TestInstallation
     public function writeComposerFile(): void
     {
         try {
-            $dir = dirname($this->getTestedRepository()->getComposerFilePath()) ;
-            if (!mkdir($dir, 0777, true) && !is_dir($dir)) {
-                throw new RuntimeException(sprintf('Directory "%s" could not be created', $dir));
-            }
-
             file_put_contents(
                 $this->getTestedRepository()->getComposerFilePath(),
                 $this->toJson()
