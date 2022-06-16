@@ -238,10 +238,10 @@ class ValidateInstallationCommand extends Command
 
         foreach (self::resolveDefaultDependencies($input) as $packageConfig) {
             $this->writeListItem($output, $packageConfig);
-            $this->writeSeparator($output);
             [$package, $version] = self::parsePackageString($packageConfig);
             $this->testInstallationFactory->addDefaultDependency($package, $version);
         }
+        $this->writeSeparator($output);
     }
 
     private static function resolveDefaultDependencies(InputInterface $input): Generator
