@@ -2,20 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Console\Command\Composer;
+namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\UpdateCommand;
 use Generator;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\CreatesOutputTrait;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\UsesThirdPartyCommandTrait;
+use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait;
+use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
 use OpenTelemetry\DevTools\Package\Composer\TestInstaller;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\LocalRepository;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\RepositoryCollection;
 use OpenTelemetry\DevTools\Package\Composer\ValueObject\SingleRepositoryInterface;
-
-;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -23,6 +21,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
+
+;
 
 class ValidateInstallationCommand extends Command
 {

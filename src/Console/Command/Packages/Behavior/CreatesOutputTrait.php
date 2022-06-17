@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Console\Command\Composer\Behavior;
+namespace OpenTelemetry\DevTools\Console\Command\Packages\Behavior;
 
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;

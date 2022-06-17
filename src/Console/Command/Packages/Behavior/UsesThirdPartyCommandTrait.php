@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Console\Command\Composer\Behavior;
+namespace OpenTelemetry\DevTools\Console\Command\Packages\Behavior;
 
 use Composer\Command\BaseCommand as ComposerBaseCommand;
 use Composer\Composer;

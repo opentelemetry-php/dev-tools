@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Console\Command\Composer;
+namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\ValidateCommand;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\CreatesOutputTrait;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\UsesThirdPartyCommandTrait;
+use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait;
+use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use Symfony\Component\Console\Command\Command;

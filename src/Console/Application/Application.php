@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Console\Application;
 
-use OpenTelemetry\DevTools\Console\Command\Composer\ValidateInstallationCommand;
-use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
+use OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand;
+use OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;

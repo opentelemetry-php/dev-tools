@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Composer;
+namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages;
 
 use ArrayIterator;
 use Exception;
-use OpenTelemetry\DevTools\Console\Command\Composer\ValidateInstallationCommand;
+use OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
 use OpenTelemetry\DevTools\Package\Composer\TestInstaller;
@@ -17,13 +17,13 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * @covers \OpenTelemetry\DevTools\Console\Command\Composer\ValidateInstallationCommand
+ * @covers \OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand
  */
 class ValidateInstallationCommandTest extends TestCase
 {
     private const PACKAGE_OPTION = '--' . ValidateInstallationCommand::PACKAGE_OPTION_NAME;
     private const DIRECTORY_OPTION = '--' . ValidateInstallationCommand::DIRECTORY_OPTION_NAME;
-    private const BRANCH_OPTION = '--' . ValidateInstallationCommand::BRANCH_OPTION_NAME;
+    private const BRANCH_OPTION = '--' . \OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand::BRANCH_OPTION_NAME;
 
     private const DEFAULT_DEPENDENCIES = [
         'composer/composer:^2.0.0',

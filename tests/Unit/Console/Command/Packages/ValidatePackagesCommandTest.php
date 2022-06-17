@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Composer;
+namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages;
 
-use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
+use OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Tester\CommandTester;
 
 /**
- * @covers \OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand
+ * @covers \OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand
  */
 class ValidatePackagesCommandTest extends TestCase
 {
@@ -87,7 +87,7 @@ class ValidatePackagesCommandTest extends TestCase
      */
     private function createValidatePackagesCommand(array $paths): ValidatePackagesCommand
     {
-        return new ValidatePackagesCommand(
+        return new \OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand(
             $this->createConfigResolverMock($paths)
         );
     }

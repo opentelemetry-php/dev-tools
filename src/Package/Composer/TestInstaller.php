@@ -32,7 +32,7 @@ class TestInstaller
                 $installation->getTestedRepository()->getComposerFilePath()
             );
 
-            echo PHP_EOL."Creating: $testDirectory".PHP_EOL;
+            echo PHP_EOL . "Creating: $testDirectory" . PHP_EOL;
 
             self::createDirectory($testDirectory);
 

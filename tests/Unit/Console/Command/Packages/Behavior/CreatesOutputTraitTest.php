@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Composer\Behavior;
+namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages\Behavior;
 
 use Exception;
 use Generator;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\CreatesOutputTrait;
+use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * @covers \OpenTelemetry\DevTools\Console\Command\Composer\Behavior\CreatesOutputTrait
+ * @covers \OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait
  */
 class CreatesOutputTraitTest extends TestCase
 {

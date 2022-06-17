@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Composer\Behavior;
+namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages\Behavior;
 
 use Composer\Command\BaseCommand as ComposerBaseCommand;
 use Composer\Console\Application as ComposerApplication;
 use Exception;
 use InvalidArgumentException;
-use OpenTelemetry\DevTools\Console\Command\Composer\Behavior\UsesThirdPartyCommandTrait;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use stdClass;
@@ -19,7 +18,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * @covers \OpenTelemetry\DevTools\Console\Command\Composer\Behavior\UsesThirdPartyCommandTrait
+ * @covers \OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait
  */
 class UsesThirdPartyCommandTraitTest extends TestCase
 {
@@ -147,7 +146,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
         $application = $this->getApplication();
 
         return new class($application) {
-            use UsesThirdPartyCommandTrait;
+            use \OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 
             private Application $application;
 
