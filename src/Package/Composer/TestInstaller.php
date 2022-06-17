@@ -28,11 +28,7 @@ class TestInstaller
     public function install(TestInstallation $installation): bool
     {
         try {
-            $testDirectory = $this->getTestDirectory(
-                $installation->getTestedRepository()->getComposerFilePath()
-            );
-
-            echo PHP_EOL . "Creating: $testDirectory" . PHP_EOL;
+            $testDirectory = $this->getRootDirectory();
 
             self::createDirectory($testDirectory);
 
@@ -47,11 +43,7 @@ class TestInstaller
     public function remove(TestInstallation $installation): bool
     {
         try {
-            self::removeDirectory(
-                $this->getTestDirectory(
-                    $installation->getTestedRepository()->getComposerFilePath()
-                )
-            );
+            self::removeDirectory($this->getRootDirectory());
 
             return true;
         } catch (Throwable $e) {
@@ -72,11 +64,6 @@ class TestInstaller
     public static function setDirectoryRemover(?RecursiveDirectoryRemover $directoryRemover): void
     {
         self::$directoryRemover = $directoryRemover;
-    }
-
-    private function getTestDirectory(string $composerFilePath): string
-    {
-        return $this->rootDirectory . DIRECTORY_SEPARATOR . str_replace('/', '_', dirname($composerFilePath));
     }
 
     private static function createDirectory(string $directory): void

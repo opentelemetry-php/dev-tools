@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Tests\Unit\Console\Application;
 
 use OpenTelemetry\DevTools\Console\Application\Application;
-use OpenTelemetry\DevTools\Console\Command\Composer\ValidatePackagesCommand;
+use OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand;
 use PHPUnit\Framework\TestCase;
 
 /**

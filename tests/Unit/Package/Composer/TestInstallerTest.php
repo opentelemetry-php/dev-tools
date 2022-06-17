@@ -35,7 +35,7 @@ class TestInstallerTest extends TestCase
         TestInstaller::setDirectoryRemover($this->directoryRemover);
 
         $this->instance = TestInstaller::create(
-            $this->root->url()
+            $this->root->url() . DIRECTORY_SEPARATOR . self::TEST_DIR
         );
     }
 
@@ -82,7 +82,7 @@ class TestInstallerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $installation = $this->createMock(TestInstallation::class);
-        $installation->method('getTestedRepository')
+        $installation->method('writeComposerFile')
             ->willThrowException($exception);
 
         $this->assertTrue(
@@ -134,6 +134,9 @@ class TestInstallerTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_remove_throws_exception_on_error(): void
     {
         $exception = new RuntimeException();
@@ -141,7 +144,9 @@ class TestInstallerTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $installation = $this->createMock(TestInstallation::class);
-        $installation->method('getTestedRepository')
+
+        /** @phpstan-ignore-next-line */
+        $this->directoryRemover->method('remove')
             ->willThrowException($exception);
 
         $this->assertTrue(
@@ -152,7 +157,7 @@ class TestInstallerTest extends TestCase
     public function test_get_root_directory(): void
     {
         $this->assertSame(
-            $this->root->url(),
+            $this->root->url() . DIRECTORY_SEPARATOR . self::TEST_DIR,
             $this->instance->getRootDirectory()
         );
     }

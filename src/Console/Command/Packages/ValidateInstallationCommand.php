@@ -178,9 +178,9 @@ class ValidateInstallationCommand extends BaseCommand
         $this->writeBlankLine();
         $this->writeSection($packageName);
         $this->writeLine('Install Dir: ' . $installationDirectory);
-        $this->writeLine('Composer Source: ' . realpath($composerFile));
+        $this->writeLine('Composer Source: ' . ($composerFile));
 
-        $this->testInstaller->setRootDirectory($this->installationDirectory);
+        $this->testInstaller->setRootDirectory($this->getInstallDirectory($composerFile));
         $this->testInstaller->install($installation);
 
         $res = $this->runUpdateCommand(
@@ -194,7 +194,7 @@ class ValidateInstallationCommand extends BaseCommand
 
     private function getInstallDirectory(string $composerFilePath): string
     {
-        return str_replace('/', '_', dirname($composerFilePath));
+        return $this->installationDirectory . DIRECTORY_SEPARATOR . md5(str_replace('/', '_', dirname($composerFilePath)));
     }
 
     /**
@@ -223,7 +223,7 @@ class ValidateInstallationCommand extends BaseCommand
     private function setUpWorkingDirectory(): void
     {
         if ($this->getInput()->hasOption(self::DIRECTORY_OPTION_NAME)
-            && $this->getInput()->getOption(self::DIRECTORY_OPTION_NAME) !== null) {
+            && is_string($this->getInput()->getOption(self::DIRECTORY_OPTION_NAME))) {
             $this->setInstallationDirectory(
                 $this->getInput()->getOption(self::DIRECTORY_OPTION_NAME)
             );

@@ -37,9 +37,9 @@ class MultiRepositoryInfoResolverTest extends TestCase
     ];
     private const COMPOSER_FILE_NAME = 'composer.json';
     private const COMPOSER_FILE_PATHS = [
-        'a/foo',
-        'a/bar',
-        'a/baz',
+        'A/foo',
+        'A/bar',
+        'A/baz',
     ];
     private const ROOT_PATH = 'vfs://root/';
 

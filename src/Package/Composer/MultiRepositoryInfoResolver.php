@@ -110,10 +110,6 @@ class MultiRepositoryInfoResolver
 
     private function getRepositoryPath(string $composerFile): string
     {
-        return sprintf(
-            '%s/%s',
-            $this->workingDirectory,
-            dirname($composerFile)
-        );
+        return dirname($composerFile);
     }
 }

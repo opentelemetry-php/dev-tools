@@ -38,7 +38,7 @@ class CommandRunner
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Could not run command "%s"', $command->getName() ?? get_class($command)),
-                $t->getCode(),
+                (int) $t->getCode(),
                 $t
             );
         }
@@ -49,7 +49,7 @@ class CommandRunner
         $this->input = $input;
     }
 
-    public function getInput(): ?InputInterface
+    public function getInput(): InputInterface
     {
         return $this->input ?? $this->input = new ArrayInput([]);
     }
@@ -59,7 +59,7 @@ class CommandRunner
         $this->output = $output;
     }
 
-    public function getOutput(): ?OutputInterface
+    public function getOutput(): OutputInterface
     {
         return $this->output ?? $this->output = new NullOutput();
     }

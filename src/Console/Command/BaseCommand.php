@@ -26,6 +26,9 @@ class BaseCommand extends Command
         return $this->output;
     }
 
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
     public function getStyle(): SymfonyStyle
     {
         return $this->style ?? $this->style = new SymfonyStyle(
@@ -90,6 +93,9 @@ class BaseCommand extends Command
         $this->writeSuccess();
     }
 
+    /**
+     * @suppress PhanTypeMismatchArgumentNullable
+     */
     protected function writeThrowable(Throwable $throwable): void
     {
         $this->writeBlankLine();

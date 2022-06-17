@@ -10,6 +10,7 @@ use Composer\Console\Application as ComposerApplication;
 use Composer\Factory;
 use Composer\IO\NullIO;
 use InvalidArgumentException;
+use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
 use ReflectionClass;
 use RuntimeException;
@@ -21,6 +22,8 @@ use Throwable;
 
 trait UsesThirdPartyCommandTrait
 {
+    protected CommandRunner $commandRunner;
+
     protected function createAndRunCommand(
         string $commandClass,
         InputInterface $input,
@@ -48,7 +51,7 @@ trait UsesThirdPartyCommandTrait
                 chdir($workingDirectory);
             }
 
-            return $command->run($input, $output);
+            return $this->getCommandRunner()->run($command, $input, $output);
         } catch (Throwable $t) {
             throw new RuntimeException(
                 sprintf('Failed to run command "%s". Error: "%s" ', get_class($command), $t->getMessage()),
@@ -130,6 +133,19 @@ trait UsesThirdPartyCommandTrait
                 $t
             );
         }
+    }
+
+    public function setCommandRunner(CommandRunner $commandRunner): void
+    {
+        $this->commandRunner = $commandRunner;
+    }
+
+    /**
+     * @psalm-suppress RedundantPropertyInitializationCheck
+     */
+    public function getCommandRunner(): CommandRunner
+    {
+        return $this->commandRunner ?? $this->commandRunner = CommandRunner::create();
     }
 
     /**

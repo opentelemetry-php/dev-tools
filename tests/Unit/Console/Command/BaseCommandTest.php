@@ -59,6 +59,9 @@ class BaseCommandTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedInterfaceMethod
+     */
     public function test_get_style(): void
     {
         $style = $this->createMock(SymfonyStyle::class);
@@ -68,6 +71,7 @@ class BaseCommandTest extends TestCase
             $this->output
         );
 
+        /** @phpstan-ignore-next-line */
         $this->output->method('getFormatter')
             ->willReturn($this->createMock(OutputFormatterInterface::class));
 
@@ -84,36 +88,56 @@ class BaseCommandTest extends TestCase
         );
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_title(): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->once())->method('title');
 
         $this->instance->doWriteTitle();
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_blank_line(): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->once())->method('newLine');
 
         $this->instance->doWriteBlankLine();
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_blank_listing(): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->once())->method('listing');
 
         $this->instance->doWriteListing([]);
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_ok(): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->once())->method('block');
 
         $this->instance->doWriteOk();
     }
 
+    /**
+     * @psalm-suppress UndefinedMethod
+     */
     public function test_write_throwable(): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->atLeastOnce())->method('error');
 
         $this->instance->doWriteThrowable(
@@ -123,9 +147,11 @@ class BaseCommandTest extends TestCase
 
     /**
      * @dataProvider provideFormattedMessageCalls
+     * @psalm-suppress UndefinedMethod
      */
     public function test_write_formatted_messages(string $method, string $styleMethod): void
     {
+        /** @phpstan-ignore-next-line */
         $this->style->expects($this->once())->method($styleMethod);
 
         $this->instance->{$method}('foo');

@@ -27,6 +27,7 @@ class ValidateInstallationCommandTest extends TestCase
     private const PACKAGE_OPTION_VALUE = [];
     private const DIRECTORY_OPTION_NAME = '--' . ValidateInstallationCommand::DIRECTORY_OPTION_NAME;
     private const DIRECTORY_OPTION_VALUE = __DIR__ . '/../../../../../var/package/install';
+    private const GITHUB_DIRECTORY_OPTION_VALUE = '~';
     private const BRANCH_OPTION_NAME = '--' . ValidateInstallationCommand::BRANCH_OPTION_NAME;
     private const BRANCH_OPTION_VALUE = 'main';
 
@@ -44,7 +45,7 @@ class ValidateInstallationCommandTest extends TestCase
         );
 
         $input = [
-            self::DIRECTORY_OPTION_NAME => realpath(self::DIRECTORY_OPTION_VALUE) ,
+            self::DIRECTORY_OPTION_NAME => realpath(self::getInstallDirectory()),
             self::BRANCH_OPTION_NAME => self::BRANCH_OPTION_VALUE,
             self::PACKAGE_OPTION_NAME => self::PACKAGE_OPTION_VALUE,
         ];
@@ -56,8 +57,6 @@ class ValidateInstallationCommandTest extends TestCase
         $commandTester->execute($input);
 
         chdir($oldWorkingDirectory);
-
-        var_dump($commandTester->getDisplay());
 
         $this->assertSame(
             Command::SUCCESS,
@@ -72,23 +71,6 @@ class ValidateInstallationCommandTest extends TestCase
             $this->createTestInstallationFactory(),
             $this->createTestInstaller(),
         );
-    }
-
-    private function createValidateInstallationCommandFailureMock(): ValidateInstallationCommand
-    {
-        $command = $this->getMockBuilder(ValidateInstallationCommand::class)
-            ->setConstructorArgs([
-                $this->createMultiRepositoryInfoResolver(),
-                $this->createTestInstallationFactory(),
-                $this->createTestInstaller(),
-            ])
-            ->setMethods(['installPackage'])
-            ->getMock();
-        $command->expects($this->once())
-            ->method('installPackage')
-            ->willReturn(Command::FAILURE);
-
-        return $command;
     }
 
     private function createMultiRepositoryInfoResolver(): MultiRepositoryInfoResolver
@@ -112,5 +94,24 @@ class ValidateInstallationCommandTest extends TestCase
     private function createTestInstaller(): TestInstaller
     {
         return new TestInstaller(__DIR__);
+    }
+
+    private static function getInstallDirectory(): string
+    {
+        return self::getEnv('GITHUB_ACTIONS')
+            ? self::GITHUB_DIRECTORY_OPTION_VALUE
+            : self::DIRECTORY_OPTION_VALUE;
+    }
+
+    private static function getEnv(string $name)
+    {
+        if (array_key_exists($name, $_SERVER)) {
+            return (string) $_SERVER[$name];
+        }
+        if (array_key_exists($name, $_ENV)) {
+            return (string) $_ENV[$name];
+        }
+
+        return getenv($name);
     }
 }
