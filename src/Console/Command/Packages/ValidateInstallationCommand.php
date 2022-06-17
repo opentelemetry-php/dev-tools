@@ -7,6 +7,7 @@ namespace OpenTelemetry\DevTools\Console\Command\Packages;
 use Composer\Command\UpdateCommand;
 use Generator;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
+use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
@@ -60,13 +61,15 @@ class ValidateInstallationCommand extends BaseCommand
     public function __construct(
         MultiRepositoryInfoResolver $resolver,
         ?TestInstallationFactory $testInstallationFactory = null,
-        ?TestInstaller $testInstaller = null
+        ?TestInstaller $testInstaller = null,
+        ?CommandRunner $commandRunner = null
     ) {
         parent::__construct(self::NAME);
 
         $this->resolver = $resolver;
         $this->testInstallationFactory = $testInstallationFactory ?? TestInstallationFactory::create();
         $this->testInstaller = $testInstaller ?? TestInstaller::create(self::DEFAULT_INSTALLATION_DIRECTORY);
+        $this->commandRunner = $commandRunner ?? CommandRunner::create();
         $this->setInstallationDirectory($this->testInstaller->getRootDirectory());
         $this->initWorkingDirectory();
     }

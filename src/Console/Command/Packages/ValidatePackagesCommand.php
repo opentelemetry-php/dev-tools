@@ -6,6 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\ValidateCommand;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
+use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
@@ -24,11 +25,12 @@ class ValidatePackagesCommand extends BaseCommand
 
     private ConfigResolverInterface $resolver;
 
-    public function __construct(ConfigResolverInterface $resolver)
+    public function __construct(ConfigResolverInterface $resolver, ?CommandRunner $commandRunner = null)
     {
         parent::__construct(self::NAME);
 
         $this->resolver = $resolver;
+        $this->commandRunner = $commandRunner ?? CommandRunner::create();
     }
 
     protected function configure(): void

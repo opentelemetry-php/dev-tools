@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages;
 
+use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use PHPUnit\Framework\TestCase;
@@ -27,11 +28,15 @@ class ValidatePackagesCommandTest extends TestCase
             self::VALID_COMPOSER_FILE,
         ];
 
-        $commandTester = new CommandTester(
-            $this->createValidatePackagesCommand(
-                $paths
-            )
-        );
+        $command = $this->createValidatePackagesCommand($paths);
+        $runner = $this->createMock(CommandRunner::class);
+        $runner
+            ->method('run')
+            ->willReturn(Command::SUCCESS);
+        $command->setCommandRunner($runner);
+
+        $commandTester = new CommandTester($command);
+
         $commandTester->execute([]);
 
         $this->assertSame(

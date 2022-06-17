@@ -6,6 +6,7 @@ namespace OpenTelemetry\DevTools\Tests\Unit\Console\Command\Packages;
 
 use ArrayIterator;
 use Exception;
+use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
@@ -31,9 +32,14 @@ class ValidateInstallationCommandTest extends TestCase
 
     public function test_execute_valid(): void
     {
-        $commandTester = new CommandTester(
-            $this->createValidateInstallationCommand(false)
-        );
+        $command = $this->createValidateInstallationCommand();
+        $runner = $this->createMock(CommandRunner::class);
+        $runner
+            ->method('run')
+            ->willReturn(Command::SUCCESS);
+        $command->setCommandRunner($runner);
+
+        $commandTester = new CommandTester($command);
 
         $input = [
             self::DIRECTORY_OPTION => '/tmp/_test/' . md5((string) microtime(true)),
