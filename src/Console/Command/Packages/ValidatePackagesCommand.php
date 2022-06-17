@@ -5,20 +5,18 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\ValidateCommand;
-use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait;
+use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\ConsoleOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-class ValidatePackagesCommand extends Command
+class ValidatePackagesCommand extends BaseCommand
 {
-    use CreatesOutputTrait;
     use UsesThirdPartyCommandTrait;
 
     public const NAME = 'packages:composer:validate';
@@ -40,18 +38,16 @@ class ValidatePackagesCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->writeBlankLine($output);
-        $this->writeHeadline($output, $this->getName() ?? self::NAME);
-        $this->writeComment($output, 'Validating composer files in: ');
-        $this->writeComment($output, WorkingDirectoryResolver::create()->resolve());
-        $this->writeSeparator($output);
+        $this->registerInputAndOutput($input, $output);
+
+        $this->writeIntro();
 
         $configs = $this->resolver->resolve();
 
         foreach ($configs as $composerFile) {
             try {
-                $this->writeBlankLine($output);
-                $this->writeHeadline($output, sprintf(
+                $this->writeBlankLine();
+                $this->writeSection(sprintf(
                     'Validating: %s',
                     $composerFile
                 ));
@@ -59,7 +55,7 @@ class ValidatePackagesCommand extends Command
                 $res = $this->runValidateCommand($composerFile);
 
                 if ($res !== 0) {
-                    $this->writeError($output, sprintf(
+                    $this->writeError(sprintf(
                         'Composer file is invalid %s',
                         $composerFile
                     ));
@@ -67,9 +63,9 @@ class ValidatePackagesCommand extends Command
                     return self::FAILURE;
                 }
 
-                $this->writeOk($output);
+                $this->writeOk();
             } catch (Throwable $t) {
-                $this->writeThrowable($output, $t);
+                $this->writeThrowable($t);
 
                 return self::FAILURE;
             }
@@ -90,5 +86,12 @@ class ValidatePackagesCommand extends Command
             ),
             WorkingDirectoryResolver::create()->resolve()
         );
+    }
+
+    private function writeIntro(): void
+    {
+        $this->writeTitle();
+        $this->writeSection('Validating composer files in: ' . WorkingDirectoryResolver::create()->resolve());
+        $this->writeBlankLine();
     }
 }

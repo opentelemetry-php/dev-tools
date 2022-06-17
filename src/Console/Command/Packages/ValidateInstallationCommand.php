@@ -6,7 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\UpdateCommand;
 use Generator;
-use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\CreatesOutputTrait;
+use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\TestInstallationFactory;
@@ -22,12 +22,9 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Throwable;
 
-;
-
-class ValidateInstallationCommand extends Command
+class ValidateInstallationCommand extends BaseCommand
 {
     use UsesThirdPartyCommandTrait;
-    use CreatesOutputTrait;
 
     public const NAME = 'packages:validate:installation';
     public const DESCRIPTION = 'Validates composer files of the individual mono-repo packages';
@@ -99,31 +96,34 @@ class ValidateInstallationCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $this->registerInputAndOutput($input, $output);
+
         try {
-            $this->setUpWorkingDirectory($input);
+            $this->setUpWorkingDirectory();
 
-            $this->writeIntro($output);
+            $this->writeIntro();
+            $this->writeInstallDirectory();
+            $this->writeDependencies(
+                $this->setUpDefaultDependencies()
+            );
 
-            $this->setUpDefaultDependencies($input, $output);
-
-            return $this->runInstallations($input, $output);
+            return $this->runInstallations();
         } catch (Throwable $t) {
-            $this->writeThrowable($output, $t);
+            $this->writeThrowable($t);
 
             return Command::FAILURE;
         }
     }
 
-    private function runInstallations(InputInterface $input, OutputInterface $output): int
+    private function runInstallations(): int
     {
 
         /** @var SingleRepositoryInterface $repository */
         foreach ($this->getPackageInfos() as $repository) {
             $res = $this->runInstallation(
-                $output,
                 $repository,
                 $this->getPackageInfos(),
-                self::resolveBranchOptionValue($input)
+                self::resolveBranchOptionValue($this->getInput())
             );
 
             if ($res !== self::SUCCESS) {
@@ -135,14 +135,12 @@ class ValidateInstallationCommand extends Command
     }
 
     private function runInstallation(
-        OutputInterface $output,
         SingleRepositoryInterface $repository,
         RepositoryCollection $dependencies,
         ?string $branch = null
     ): int {
-        if ($this->installPackage($output, $repository, $dependencies, $branch) !== 0) {
+        if ($this->installPackage($repository, $dependencies, $branch) !== 0) {
             $this->writeError(
-                $output,
                 sprintf(
                     'Failed to install %s',
                     $repository->getComposerFilePath()
@@ -152,13 +150,12 @@ class ValidateInstallationCommand extends Command
             return Command::FAILURE;
         }
 
-        $this->writeOk($output);
+        $this->writeOk();
 
         return Command::SUCCESS;
     }
 
     protected function installPackage(
-        OutputInterface $output,
         SingleRepositoryInterface $repository,
         RepositoryCollection $dependencies,
         ?string $branch = null
@@ -175,18 +172,15 @@ class ValidateInstallationCommand extends Command
 
         $installationDirectory = $installation->getTestedRepository()->getUrl();
 
-        $this->writeBlankLine($output);
-        $this->writeHeadline($output, $packageName);
-        $this->writeComment($output, 'Install Dir: ' . $installationDirectory);
-        $this->writeComment($output, 'Composer Source: ' . realpath($composerFile));
-        $this->writeSeparator($output);
-        $this->writeBlankLine($output);
+        $this->writeBlankLine();
+        $this->writeSection($packageName);
+        $this->writeLine('Install Dir: ' . $installationDirectory);
+        $this->writeLine('Composer Source: ' . realpath($composerFile));
 
         $this->testInstaller->setRootDirectory($this->installationDirectory);
         $this->testInstaller->install($installation);
 
         $res = $this->runUpdateCommand(
-            $output,
             $installationDirectory
         );
 
@@ -223,26 +217,27 @@ class ValidateInstallationCommand extends Command
         return explode(':', $package);
     }
 
-    private function setUpWorkingDirectory(InputInterface $input): void
+    private function setUpWorkingDirectory(): void
     {
-        if ($input->hasOption(self::DIRECTORY_OPTION_NAME)
-            && $input->getOption(self::DIRECTORY_OPTION_NAME) !== null) {
+        if ($this->getInput()->hasOption(self::DIRECTORY_OPTION_NAME)
+            && $this->getInput()->getOption(self::DIRECTORY_OPTION_NAME) !== null) {
             $this->setInstallationDirectory(
-                $input->getOption(self::DIRECTORY_OPTION_NAME)
+                $this->getInput()->getOption(self::DIRECTORY_OPTION_NAME)
             );
         }
     }
 
-    private function setUpDefaultDependencies(InputInterface $input, OutputInterface $output): void
+    private function setUpDefaultDependencies(): array
     {
-        $this->writeComment($output, 'with default packages: ');
+        $dependencies = [];
 
-        foreach (self::resolveDefaultDependencies($input) as $packageConfig) {
-            $this->writeListItem($output, $packageConfig);
+        foreach (self::resolveDefaultDependencies($this->getInput()) as $packageConfig) {
+            $dependencies[] = $packageConfig;
             [$package, $version] = self::parsePackageString($packageConfig);
             $this->testInstallationFactory->addDefaultDependency($package, $version);
         }
-        $this->writeSeparator($output);
+
+        return $dependencies;
     }
 
     private static function resolveDefaultDependencies(InputInterface $input): Generator
@@ -267,22 +262,32 @@ class ValidateInstallationCommand extends Command
             : null;
     }
 
-    private function runUpdateCommand(OutputInterface $output, string $workingDirectory = null): int
+    private function runUpdateCommand(string $workingDirectory = null): int
     {
         return $this->createAndRunCommand(
             UpdateCommand::class,
             new ArrayInput(self::UPDATE_COMMAND_OPTIONS),
-            $output,
+            $this->getOutput(),
             $workingDirectory
         );
     }
 
-    private function writeIntro(OutputInterface $output): void
+    private function writeIntro(): void
     {
-        $this->writeBlankLine($output);
-        $this->writeHeadline($output, $this->getName() ?? self::NAME);
-        $this->writeComment($output, 'Trying to install packages from: ');
-        $this->writeComment($output, $this->workingDirectory);
-        $this->writeSeparator($output);
+        $this->writeTitle();
+        $this->writeSection('Trying to install packages from: ' . $this->workingDirectory);
+    }
+
+    private function writeDependencies(array $dependencies): void
+    {
+        if (!empty($dependencies)) {
+            $this->writeLine('Default packages: ');
+            $this->writeListing($dependencies);
+        }
+    }
+
+    private function writeInstallDirectory(): void
+    {
+        $this->writeLine('Installation directory: ' . $this->installationDirectory);
     }
 }
