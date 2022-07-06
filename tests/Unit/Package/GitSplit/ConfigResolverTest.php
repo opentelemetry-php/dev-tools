@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Tests\Unit\Package\GitSplit;
 
 use InvalidArgumentException;
+use function is_array;
+use function iterator_to_array;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
 use OpenTelemetry\DevTools\Tests\Unit\Behavior\UsesVfsTrait;
 use org\bovigo\vfs\vfsStream;
@@ -32,6 +34,12 @@ class ConfigResolverTest extends TestCase
         $this->setUpVcs();
     }
 
+    private static function iterableToArray(iterable $iterable): array
+    {
+        /** @noinspection PhpParamsInspection */
+        return is_array($iterable) ? $iterable : iterator_to_array($iterable);
+    }
+
     public function test_resolve(): void
     {
         $resolver = new ConfigResolver(
@@ -42,7 +50,7 @@ class ConfigResolverTest extends TestCase
 
         $this->assertSame(
             $this->getExpectedResolverResult(),
-            $resolver->resolve()
+            self::iterableToArray($resolver->resolve()),
         );
     }
 
@@ -56,7 +64,7 @@ class ConfigResolverTest extends TestCase
 
         $this->assertSame(
             $this->getExpectedResolverResult(),
-            $resolver->resolve()
+            self::iterableToArray($resolver->resolve()),
         );
     }
 
@@ -69,7 +77,7 @@ class ConfigResolverTest extends TestCase
         );
 
         $this->assertEmpty(
-            $resolver->resolve()
+            self::iterableToArray($resolver->resolve()),
         );
     }
 
@@ -99,7 +107,7 @@ class ConfigResolverTest extends TestCase
         $result = [];
 
         foreach (self::PACKAGE_PATHS as $path) {
-            $result[] = sprintf(
+            $result[$path] = sprintf(
                 '%s/composer.json',
                 $path
             );

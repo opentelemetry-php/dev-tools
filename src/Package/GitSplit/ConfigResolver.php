@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Package\GitSplit;
 
+use Composer\Factory;
+use Composer\Util\Filesystem;
 use InvalidArgumentException;
 use OpenTelemetry\DevTools\Package\Composer\ConfigResolverInterface;
 use OpenTelemetry\DevTools\Util\WorkingDirectoryResolver;
@@ -15,7 +17,6 @@ class ConfigResolver implements ConfigResolverInterface
     private const SPLITS_KEY = 'splits';
     private const PREFIX_KEY = 'prefix';
     private const GIT_SPLIT_FILE_NAME = '.gitsplit.yml';
-    private const COMPOSER_FILE_NAME = 'composer.json';
 
     private string $configFile;
 
@@ -24,7 +25,7 @@ class ConfigResolver implements ConfigResolverInterface
         $this->configFile = $configFile ?? $this->getDefaultConfigPath();
     }
 
-    public function resolve(): array
+    public function resolve(): iterable
     {
         $gitSplitConfig = self::parseGitSplitFile($this->configFile);
 
@@ -51,29 +52,16 @@ class ConfigResolver implements ConfigResolverInterface
         }
     }
 
-    private static function resolveComposerFiles(array $gitSplitConfig): array
+    private static function resolveComposerFiles(array $gitSplitConfig): iterable
     {
-        $result = [];
-
+        $fs = new Filesystem();
+        $composerFile = Factory::getComposerFile();
         foreach ($gitSplitConfig[self::SPLITS_KEY] as $pathConfig) {
             if (isset($pathConfig[self::PREFIX_KEY]) && is_string($pathConfig[self::PREFIX_KEY])) {
-                $result[] = self::resolveComposerFilePath($pathConfig[self::PREFIX_KEY]);
+                $path = $pathConfig[self::PREFIX_KEY];
+
+                yield $fs->normalizePath($path) => $fs->normalizePath($path . '/' . $composerFile);
             }
         }
-
-        return $result;
-    }
-
-    private static function resolveComposerFilePath(string $directory): string
-    {
-        if (substr($directory, -1) !== '/') {
-            $directory .= '/';
-        }
-
-        return sprintf(
-            '%s%s',
-            $directory,
-            self::COMPOSER_FILE_NAME
-        );
     }
 }

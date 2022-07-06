@@ -6,5 +6,5 @@ namespace OpenTelemetry\DevTools\Package\Composer;
 
 interface ConfigResolverInterface
 {
-    public function resolve(): array;
+    public function resolve(): iterable;
 }

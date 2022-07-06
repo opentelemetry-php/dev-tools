@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Console\Command\Packages;
 
 use Composer\Command\ValidateCommand;
+use Composer\Util\Filesystem;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Command\CommandRunner;
 use OpenTelemetry\DevTools\Console\Command\Packages\Behavior\UsesThirdPartyCommandTrait;
@@ -46,7 +47,7 @@ class ValidatePackagesCommand extends BaseCommand
 
         $configs = $this->resolver->resolve();
 
-        foreach ($configs as $composerFile) {
+        foreach ($configs as $directory => $composerFile) {
             try {
                 $this->writeBlankLine();
                 $this->writeSection(sprintf(
@@ -54,7 +55,7 @@ class ValidatePackagesCommand extends BaseCommand
                     $composerFile
                 ));
 
-                $res = $this->runValidateCommand($composerFile);
+                $res = $this->runValidateCommand($composerFile, $directory);
 
                 if ($res !== 0) {
                     $this->writeError(sprintf(
@@ -76,8 +77,12 @@ class ValidatePackagesCommand extends BaseCommand
         return self::SUCCESS;
     }
 
-    private function runValidateCommand(string $composerFile): int
+    private function runValidateCommand(string $composerFile, string $directory): int
     {
+        if (!(new Filesystem())->isAbsolutePath($composerFile)) {
+            $composerFile = WorkingDirectoryResolver::create()->resolve() . '/' . $composerFile;
+        }
+
         return $this->createAndRunCommand(
             ValidateCommand::class,
             new ArrayInput([
@@ -86,7 +91,7 @@ class ValidatePackagesCommand extends BaseCommand
             new ConsoleOutput(
                 OutputInterface::VERBOSITY_DEBUG
             ),
-            WorkingDirectoryResolver::create()->resolve()
+            $directory,
         );
     }
 
