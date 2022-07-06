@@ -68,17 +68,17 @@ class MultiRepositoryInfoResolver
 
     private function doResolve(): Generator
     {
-        foreach ($this->configResolver->resolve() as $composerFile) {
-            $repository = $this->createRepository($composerFile);
+        foreach ($this->configResolver->resolve() as $directory => $composerFile) {
+            $repository = $this->createRepository($composerFile, $directory);
 
             yield $repository->getPackage()->getName() => $repository;
         }
     }
 
-    private function createRepository(string $composerFile): SingleRepositoryInterface
+    private function createRepository(string $composerFile, string $directory): SingleRepositoryInterface
     {
         return $this->repositoryFactory->buildSingleRepository(
-            $this->getRepositoryPath($composerFile),
+            $directory,
             RepositoryTypes::PATH_TYPE,
             $this->getPackageName($composerFile),
             $this->getPackageType($composerFile)
@@ -106,10 +106,5 @@ class MultiRepositoryInfoResolver
     private function createPackageNameResolver(string $composerFile): PackageAttributeResolver
     {
         return $this->packageAttributeResolverFactory->build($composerFile);
-    }
-
-    private function getRepositoryPath(string $composerFile): string
-    {
-        return dirname($composerFile);
     }
 }

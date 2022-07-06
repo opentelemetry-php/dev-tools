@@ -190,7 +190,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
         foreach (self::COMPOSER_FILE_PATHS as $path) {
             $config = self::COMPOSER_CONFIG;
             $config[self::NAME_ATTRIBUTE] = $path;
-            $result[] = $this->createConfigFile(
+            $result[$path] = $this->createConfigFile(
                 $path . DIRECTORY_SEPARATOR . self::COMPOSER_FILE_NAME,
                 json_encode($config, JSON_THROW_ON_ERROR),
             );
