@@ -6,7 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Release;
 
 class PullRequest
 {
-    public string $id;
+    public int $id;
     public string $url;
     public string $title;
     public string $author;

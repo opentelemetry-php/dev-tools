@@ -20,6 +20,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Yaml\Parser;
 
+/**
+ * @todo find commits not associated with latest tag, instead of "since"?
+ */
 class ReleaseCommand extends BaseCommand
 {
     //otel monorepos, containing a top-level .gitsplit.yaml file
@@ -30,6 +33,7 @@ class ReleaseCommand extends BaseCommand
     private ClientInterface $client;
     private Parser $parser;
     private string $token;
+    private string $source_branch;
 
     protected function configure(): void
     {
@@ -38,6 +42,7 @@ class ReleaseCommand extends BaseCommand
             ->setDescription('Find unreleased changes and create a release + notes')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'dry run')
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
+            ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
         ;
     }
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -56,6 +61,7 @@ class ReleaseCommand extends BaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->token = $input->getOption('token');
+        $this->source_branch = $input->getOption('branch') ?? 'main';
         $this->client = HttpClientDiscovery::find();
         $this->parser = new Parser();
         $this->registerInputAndOutput($input, $output);
@@ -220,7 +226,7 @@ class ReleaseCommand extends BaseCommand
     {
         $release = new Release();
         $cnt = count($repository->commits);
-        $this->output->writeln("<info>[{$repository->downstream}]</info> There are {$cnt} unreleased change(s):");
+        $this->output->writeln("<info>[{$repository->downstream}]</info> {$cnt} unreleased change(s):");
         foreach ($repository->commits as $i => $commit) {
             $this->output->writeln("<comment>{$i} - {$commit->pullRequest->title} ({$commit->pullRequest->author})</comment>");
         }
@@ -270,7 +276,7 @@ class ReleaseCommand extends BaseCommand
         $url = "https://api.github.com/repos/{$repository->org}/{$repository->downstream}/releases";
         $body = json_encode([
             'tag_name' => $release->version,
-            'target_commitish' => 'main',
+            'target_commitish' => $this->source_branch,
             'name' => "Release {$release->version}",
             'body' => $release->notes,
             'draft' => false,
