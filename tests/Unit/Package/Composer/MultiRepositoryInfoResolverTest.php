@@ -56,7 +56,6 @@ class MultiRepositoryInfoResolverTest extends TestCase
         )->resolve();
 
         foreach (self::COMPOSER_FILE_PATHS as $path) {
-            /** @phpstan-ignore-next-line */
             $this->assertArrayHasKey($path, $collection);
         }
     }
@@ -66,7 +65,6 @@ class MultiRepositoryInfoResolverTest extends TestCase
         $collection = $this->createInstance()->resolve();
 
         foreach (self::COMPOSER_FILE_PATHS as $path) {
-            /** @phpstan-ignore-next-line */
             $this->assertArrayHasKey($path, $collection);
         }
     }
