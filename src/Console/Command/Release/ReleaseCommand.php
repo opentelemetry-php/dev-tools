@@ -16,6 +16,7 @@ use OpenTelemetry\DevTools\Console\Release\Repository;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -333,8 +334,7 @@ class ReleaseCommand extends BaseCommand
             : $repository->latestRelease->version;
         $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
 
-        $helper = $this->getHelper('question');
-        /** @phpstan-ignore-next-line */
+        $helper = new QuestionHelper();
         $newVersion = $helper->ask($this->input, $this->output, $question);
         if (!$newVersion) {
             $this->output->writeln("<info>[SKIP] not going to release {$repository->downstream}</info>");
@@ -343,7 +343,6 @@ class ReleaseCommand extends BaseCommand
         }
         $release->version = $newVersion;
         $question = new ConfirmationQuestion('<question>Make this the latest release (Y/n)?</question>', true);
-        /** @phpstan-ignore-next-line */
         $makeLatest = $helper->ask($this->input, $this->output, $question);
         $notes = [];
         if ($repository->latestRelease === null) {
