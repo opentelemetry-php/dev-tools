@@ -392,7 +392,7 @@ class ReleaseCommand extends BaseCommand
             'User-Agent' => 'php-' . PHP_VERSION,
             'X-GitHub-Api-Version' => '2022-11-28',
         ], $body);
-        $this->output->isDebug() && $this->output->writeln("$body");
+        $this->output->isDebug() && $this->output->writeln($body);
         if ($this->dry_run) {
             $this->output->writeln("[DRY-RUN] {$url}");
 
