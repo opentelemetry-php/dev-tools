@@ -25,9 +25,8 @@ use Symfony\Component\Yaml\Parser;
 
 class ReleaseCommand extends BaseCommand
 {
-    //otel monorepos, containing a top-level .gitsplit.yaml file
     private const AVAILABLE_REPOS = [
-        'core' => 'open-telemetry/opentelemetry-php',
+        'core'    => 'open-telemetry/opentelemetry-php',
         'contrib' => 'open-telemetry/opentelemetry-php-contrib',
     ];
     private array $sources = [];
@@ -41,7 +40,7 @@ class ReleaseCommand extends BaseCommand
     {
         $this
             ->setName('release:run')
-            ->setDescription('Find unreleased changes and create a release + notes')
+            ->setDescription('Find unreleased changes and create a new release')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'dry run')
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
             ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
@@ -74,10 +73,17 @@ class ReleaseCommand extends BaseCommand
         $this->sources = $source ? [$source => self::AVAILABLE_REPOS[$source]] : self::AVAILABLE_REPOS;
         $this->client = HttpClientDiscovery::find();
         $this->parser = new Parser();
-        $this->registerInputAndOutput($input, $output); //everything else section
+        $this->registerInputAndOutput($input, $output);
 
         $repositories = [];
-        $found = $this->find_repositories();
+
+        try {
+            $found = $this->find_repositories();
+        } catch (\Exception $e) {
+            $this->output->writeln("<error>{$e->getCode()} {$e->getMessage()}</error>");
+
+            return Command::FAILURE;
+        }
         if (count($found) === 0) {
             $this->output->writeln('<error>No repositories found!</error>');
 
@@ -86,11 +92,10 @@ class ReleaseCommand extends BaseCommand
         foreach ($found as $rep) {
             $repository = $this->populate_release_details($rep);
 
-            try {
-                $this->compare_diffs_to_unreleased($repository);
+            if ($this->compare_diffs_to_unreleased($repository) === false) {
+                $this->output->writeln("[SKIP] Skipping {$repository->downstream} due to differences");
+            } else {
                 $repositories[] = $repository;
-            } catch (\Throwable $t) {
-                $this->output->writeln("[SKIP] Skipping {$repository->downstream} due to unexplained differences");
             }
         }
         $this->publish_repositories($repositories);
@@ -337,7 +342,7 @@ class ReleaseCommand extends BaseCommand
             return;
         }
         $release->version = $newVersion;
-        $question = new ConfirmationQuestion('Make this the latest release (Y/n)? ', true);
+        $question = new ConfirmationQuestion('<question>Make this the latest release (Y/n)?</question>', true);
         /** @phpstan-ignore-next-line */
         $makeLatest = $helper->ask($this->input, $this->output, $question);
         $notes = [];
