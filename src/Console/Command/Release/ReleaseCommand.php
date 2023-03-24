@@ -8,6 +8,8 @@ use Http\Discovery\HttpClientDiscovery;
 use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Release\Commit;
+use OpenTelemetry\DevTools\Console\Release\Diff;
+use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\PullRequest;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
@@ -17,23 +19,23 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Yaml\Parser;
 
-/**
- * @todo find commits not associated with latest tag, instead of "since"?
- */
 class ReleaseCommand extends BaseCommand
 {
     //otel monorepos, containing a top-level .gitsplit.yaml file
-    private array $sources = [
+    private const AVAILABLE_REPOS = [
         'core' => 'open-telemetry/opentelemetry-php',
         'contrib' => 'open-telemetry/opentelemetry-php-contrib',
     ];
+    private array $sources = [];
     private ClientInterface $client;
     private Parser $parser;
     private string $token;
     private string $source_branch;
+    private bool $dry_run;
 
     protected function configure(): void
     {
@@ -43,6 +45,7 @@ class ReleaseCommand extends BaseCommand
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'dry run')
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
             ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
+            ->addOption('repo', ['r'], InputOption::VALUE_OPTIONAL, 'repo to handle (core, contrib)')
         ;
     }
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -62,15 +65,35 @@ class ReleaseCommand extends BaseCommand
     {
         $this->token = $input->getOption('token');
         $this->source_branch = $input->getOption('branch') ?? 'main';
+        $this->dry_run = $input->getOption('dry-run');
+        $source = $input->getOption('repo');
+        if ($source && !array_key_exists($source, self::AVAILABLE_REPOS)) {
+            $options = implode(',', array_keys(self::AVAILABLE_REPOS));
+            $this->output->writeln("<error>Invalid source: {$source}. Options: {$options}</error>");
+        }
+        $this->sources = $source ? [$source => self::AVAILABLE_REPOS[$source]] : self::AVAILABLE_REPOS;
         $this->client = HttpClientDiscovery::find();
         $this->parser = new Parser();
-        $this->registerInputAndOutput($input, $output);
+        $this->registerInputAndOutput($input, $output); //everything else section
 
         $repositories = [];
-        foreach ($this->find() as $repository) {
-            $repositories[] = $this->process($repository);
+        $found = $this->find_repositories();
+        if (count($found) === 0) {
+            $this->output->writeln('<error>No repositories found!</error>');
+
+            return Command::FAILURE;
         }
-        $this->finish($repositories);
+        foreach ($found as $rep) {
+            $repository = $this->populate_release_details($rep);
+
+            try {
+                $this->compare_diffs_to_unreleased($repository);
+                $repositories[] = $repository;
+            } catch (\Throwable $t) {
+                $this->output->writeln("[SKIP] Skipping {$repository->downstream} due to unexplained differences");
+            }
+        }
+        $this->publish_repositories($repositories);
 
         return Command::SUCCESS;
     }
@@ -79,11 +102,11 @@ class ReleaseCommand extends BaseCommand
      * @throws \Exception
      * @return array<Repository>
      */
-    private function find(): array
+    private function find_repositories(): array
     {
         $repositories = [];
         foreach ($this->sources as $key => $repo) {
-            $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key}</info>");
+            $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key} ({$repo})</info>");
             $repositories += $this->get_gitsplit_repositories($repo);
         }
 
@@ -102,30 +125,92 @@ class ReleaseCommand extends BaseCommand
         $repositories = [];
         foreach ($yaml['splits'] as $entry) {
             $repository = new Repository();
-            $repository->upstream = $repo;
-            $repository->path = $entry['prefix'];
-            $repository->downstream = $entry['target'];
+            $repository->upstream = new Project($repo);
+            $repository->upstream->path = $entry['prefix'];
+            $target = $entry['target'];
+            $repository->downstream = new Project(str_replace(['https://${GH_TOKEN}@github.com/', '.git'], ['',''], $target));
             $repositories[] = $repository;
         }
 
         return $repositories;
     }
-    private function process(Repository $repository): Repository
+
+    /**
+     * For a given repository, populate:
+     * 1. latest release
+     * 2. unreleased commits to upstream path, since date of last release
+     * 3. diffs between latest tag in downstream and selected branch (eg main)
+     */
+    private function populate_release_details(Repository $repository): Repository
     {
-        $parts = explode('/', str_replace(['https://${GH_TOKEN}@github.com/', '.git'], ['',''], $repository->downstream));
-        assert(count($parts) === 2);
-        $org = $parts[0];
-        $repo = $parts[1];
-        $repository->org = $org;
-        $repository->downstream = $repo;
-        $this->output->isVerbose() && $this->output->writeln("<info>Processing: {$org}/{$repo}</info>");
+        $this->output->isVerbose() && $this->output->writeln("<info>Processing: {$repository->downstream}</info>");
 
         $repository->latestRelease = $this->get_latest_release($repository);
-        foreach ($this->get_unreleased_commits($repository) as $commit) {
-            $repository->commits[] = $commit;
-        }
+        $repository->commits = $this->get_unreleased_commits($repository);
+        $repository->diff = $this->get_diffs($repository);
 
         return $repository;
+    }
+
+    /**
+     * Compare downstream diffs to upstream changes found by date.
+     * safety check that the changes found in upstream match diffs (which should be more accurate, but can't be used as the
+     * primary method of matching because most commit detains are changed during git-split
+     * We can only compare based on commit message vs PR message
+     */
+    private function compare_diffs_to_unreleased(Repository $repository): bool
+    {
+        if ($repository->latestRelease === null) {
+            //initial release, nothing to do
+            return true;
+        }
+        if ($repository->diff->commits === [] && $repository->commits === []) {
+            //nothing to do
+            return true;
+        }
+        $diffCommits = $foundCommits = [];
+        foreach ($repository->diff->commits as $commit) {
+            $diffCommits[] = $commit->message;
+        }
+        foreach ($repository->commits as $commit) {
+            $foundCommits[] = $commit->message;
+        }
+        $this->output->isDebug() && $this->output->writeln('[COMPARE] ' . json_encode($diffCommits) . ' with ' . json_encode($foundCommits));
+
+        $differences = array_diff($diffCommits, $foundCommits);
+        if (count($differences) !== 0) {
+            $this->output->writeln('<error>Downstream compare contains commit differences to upstream search</error>');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private function get_diffs(Repository $repository): Diff
+    {
+        $diff = new Diff();
+        if (!$repository->latestRelease) {
+            //nothing to compare against
+            return $diff;
+        }
+        $url = "https://api.github.com/repos/{$repository->downstream}/compare/{$repository->latestRelease->version}...{$this->source_branch}";
+        $response = $this->fetch($url);
+        if ($response->getStatusCode() !== 200) {
+            $this->output->writeln("<error>Failed to compare latest release with {$this->source_branch}</error>");
+
+            return $diff;
+        }
+        $data = json_decode($response->getBody()->getContents());
+
+        foreach ($data->commits as $c) {
+            $commit = new Commit();
+            $commit->sha = $c->sha;
+            $commit->message = $c->commit->message;
+            $diff->commits[] = $commit;
+        }
+
+        return $diff;
     }
 
     /**
@@ -134,7 +219,7 @@ class ReleaseCommand extends BaseCommand
      */
     private function get_unreleased_commits(Repository $repository): array
     {
-        $commits_url = "https://api.github.com/repos/{$repository->upstream}/commits?path={$repository->path}";
+        $commits_url = "https://api.github.com/repos/{$repository->upstream}/commits?path={$repository->upstream->path}";
         if ($repository->latestRelease !== null) {
             $commits_url .= "&since={$repository->latestRelease->timestamp}";
         }
@@ -144,6 +229,7 @@ class ReleaseCommand extends BaseCommand
         foreach ($data as $row) {
             $commit = new Commit();
             $commit->sha = $row->sha;
+            $commit->message = $row->commit->message;
             $commit->pullRequest = $this->get_pull_request($repository, $commit);
             $commits[] = $commit;
         }
@@ -184,7 +270,7 @@ class ReleaseCommand extends BaseCommand
 
     private function get_latest_release(Repository $repository): ?Release
     {
-        $release_url = "https://api.github.com/repos/{$repository->org}/{$repository->downstream}/releases/latest";
+        $release_url = "https://api.github.com/repos/{$repository->downstream}/releases/latest";
 
         $response = $this->fetch($release_url);
         if ($response->getStatusCode() === 404) {
@@ -195,7 +281,7 @@ class ReleaseCommand extends BaseCommand
         if ($response->getStatusCode() !== 200) {
             $this->output->writeln("<error>({$response->getStatusCode()}) {$response->getBody()}</error>");
 
-            throw new \Exception("Error retrieving latest release for {$repository->org}/{$repository->downstream}: " . $response->getReasonPhrase(), $response->getStatusCode());
+            throw new \Exception("Error retrieving latest release for {$repository->downstream}: " . $response->getReasonPhrase(), $response->getStatusCode());
         }
 
         $data = json_decode($response->getBody()->getContents());
@@ -203,6 +289,7 @@ class ReleaseCommand extends BaseCommand
         $release = new Release();
         $release->timestamp = $data->published_at;
         $release->version = $data->tag_name;
+        $this->output->isVerbose() && $this->output->writeln("[INFO] Latest release of {$repository->downstream} is {$release}");
 
         return $release;
     }
@@ -211,31 +298,38 @@ class ReleaseCommand extends BaseCommand
      * @param array<Repository> $repositories
      * @return void
      */
-    private function finish(array $repositories): void
+    private function publish_repositories(array $repositories): void
     {
         foreach ($repositories as $repo) {
             if (count($repo->commits) === 0) {
-                $this->output->isVerbose() && $this->output->writeln("<info>[SKIP] {$repo->org}/{$repo->downstream} (no new commits)</info>");
-            } else {
-                $this->handle_unreleased($repo);
+                $this->output->isVerbose() && $this->output->writeln("<info>[SKIP] {$repo->downstream} (no new commits)</info>");
+
+                continue;
             }
+            $this->handle_unreleased($repo);
         }
     }
 
+    /**
+     * @phan-suppress PhanUndeclaredMethod
+     * @psalm-suppress UndefinedInterfaceMethod
+     */
     private function handle_unreleased(Repository $repository): void
     {
         $release = new Release();
         $cnt = count($repository->commits);
         $this->output->writeln("<info>[{$repository->downstream}]</info> {$cnt} unreleased change(s):");
-        foreach ($repository->commits as $i => $commit) {
-            $this->output->writeln("<comment>{$i} - {$commit->pullRequest->title} ({$commit->pullRequest->author})</comment>");
+        foreach ($repository->commits as $commit) {
+            $this->output->writeln("<comment>* {$commit->pullRequest->title} ({$commit->pullRequest->author})</comment>");
         }
-        $helper = $this->getHelper('question');
+
         $prev = ($repository->latestRelease === null)
             ? '-nothing-'
             : $repository->latestRelease->version;
         $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
 
+        $helper = $this->getHelper('question');
+        /** @phpstan-ignore-next-line */
         $newVersion = $helper->ask($this->input, $this->output, $question);
         if (!$newVersion) {
             $this->output->writeln("<info>[SKIP] not going to release {$repository->downstream}</info>");
@@ -243,6 +337,9 @@ class ReleaseCommand extends BaseCommand
             return;
         }
         $release->version = $newVersion;
+        $question = new ConfirmationQuestion('Make this the latest release (Y/n)? ', true);
+        /** @phpstan-ignore-next-line */
+        $makeLatest = $helper->ask($this->input, $this->output, $question);
         $notes = [];
         if ($repository->latestRelease === null) {
             $notes[] = 'Initial release';
@@ -252,28 +349,28 @@ class ReleaseCommand extends BaseCommand
                 $notes[] = "* {$commit->pullRequest->title} by @{$commit->pullRequest->author} in [{$commit->pullRequest->id}]({$commit->pullRequest->url})";
             }
             $notes[] = '';
-            $notes[] = "**Full Changelog**: https://github.com/{$repository->org}/{$repository->downstream}/compare/{$repository->latestRelease->version}...{$release->version}";
+            $notes[] = "**Full Changelog**: https://github.com/{$repository->downstream}/compare/{$repository->latestRelease->version}...{$release->version}";
         }
         $release->notes = implode(PHP_EOL, $notes);
 
-        $this->do_release($repository, $release);
+        $this->do_release($repository, $release, $makeLatest);
     }
 
     private function fetch(string $url): ResponseInterface
     {
-        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] ${url}");
         $request = new Request('GET', $url, [
             'Authorization' => "token {$this->token}",
             'Accept' => 'application/vnd.github+json',
             'User-Agent' => 'php',
         ]);
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] {$request->getMethod()} ${url}");
 
         return $this->client->sendRequest($request);
     }
 
-    private function do_release(Repository $repository, Release $release)
+    private function do_release(Repository $repository, Release $release, bool $makeLatest)
     {
-        $url = "https://api.github.com/repos/{$repository->org}/{$repository->downstream}/releases";
+        $url = "https://api.github.com/repos/{$repository->downstream}/releases";
         $body = json_encode([
             'tag_name' => $release->version,
             'target_commitish' => $this->source_branch,
@@ -282,6 +379,7 @@ class ReleaseCommand extends BaseCommand
             'draft' => false,
             'prerelease' => false,
             'generate_release_notes' => false,
+            'make_latest' => $makeLatest ? 'true' : 'false',
         ]);
         $request = new Request('POST', $url, [
             'Accept' => 'application/vnd.github+json',
@@ -289,7 +387,12 @@ class ReleaseCommand extends BaseCommand
             'User-Agent' => 'php-' . PHP_VERSION,
             'X-GitHub-Api-Version' => '2022-11-28',
         ], $body);
-        $this->output->isDebug() && $this->output->writeln("<info>$body</info>");
+        $this->output->isDebug() && $this->output->writeln("$body");
+        if ($this->dry_run) {
+            $this->output->writeln("[DRY-RUN] {$url}");
+
+            return;
+        }
         $response = $this->client->sendRequest($request);
         if ($response->getStatusCode() !== 201) {
             $this->output->writeln("<error>[ERROR] ({$response->getStatusCode()}) {$response->getBody()->getContents()}</error>");

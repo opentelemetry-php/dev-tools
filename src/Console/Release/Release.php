@@ -9,4 +9,9 @@ class Release
     public string $version;
     public string $timestamp;
     public string $notes;
+
+    public function __toString(): string
+    {
+        return "{$this->version} @ {$this->timestamp}";
+    }
 }
