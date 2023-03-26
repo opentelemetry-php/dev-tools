@@ -4,7 +4,7 @@ ifneq ("$(wildcard .env)","")
 endif
 
 PHP_VERSION ?= 7.4
-DC_RUN_PHP = docker-compose run --rm php
+DC_RUN_PHP = docker compose run --rm php
 PSALM_THREADS ?= 1
 
 all: update style phan psalm phpstan test
@@ -26,7 +26,7 @@ psalm:
 psalm-info:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --show-info=true --threads=${PSALM_THREADS}
 phpstan:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpstan analyse
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpstan analyse --memory-limit=256M
 bash:
 	$(DC_RUN_PHP) bash
 style:

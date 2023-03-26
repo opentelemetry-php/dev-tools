@@ -103,6 +103,9 @@ class ValidateInstallationCommandTest extends TestCase
             : self::DIRECTORY_OPTION_VALUE;
     }
 
+    /**
+     * @psalm-suppress InvalidArrayOffset
+     */
     private static function getEnv(string $name)
     {
         if (array_key_exists($name, $_SERVER)) {

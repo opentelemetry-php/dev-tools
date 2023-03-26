@@ -6,6 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Application;
 
 use OpenTelemetry\DevTools\Console\Command\Packages\ValidateInstallationCommand;
 use OpenTelemetry\DevTools\Console\Command\Packages\ValidatePackagesCommand;
+use OpenTelemetry\DevTools\Console\Command\Release\ReleaseCommand;
 use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
@@ -34,6 +35,7 @@ class Application extends BaseApplication
                     new PackageAttributeResolverFactory()
                 )
             ),
+            new ReleaseCommand(),
         ]);
     }
 }
