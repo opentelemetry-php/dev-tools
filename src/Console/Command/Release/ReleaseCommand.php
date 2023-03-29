@@ -113,7 +113,7 @@ class ReleaseCommand extends BaseCommand
         $repositories = [];
         foreach ($this->sources as $key => $repo) {
             $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key} ({$repo})</info>");
-            $repositories += $this->get_gitsplit_repositories($repo);
+            $repositories = array_merge($repositories, $this->get_gitsplit_repositories($repo));
         }
 
         return $repositories;
@@ -129,6 +129,7 @@ class ReleaseCommand extends BaseCommand
 
         $yaml = $this->parser->parse($response->getBody()->getContents());
         $repositories = [];
+        $this->output->isVeryVerbose() && $this->output->writeln('[RESPONSE]' . json_encode($yaml['splits']));
         foreach ($yaml['splits'] as $entry) {
             $repository = new Repository();
             $repository->upstream = new Project($repo);
