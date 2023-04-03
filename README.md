@@ -51,3 +51,35 @@ Once all the info has been gathered, it will iterate over each repo with unrelea
 ### TODO
 * in the future, we may have multiple release branches (`1.x`, `2.x`) (may need to redefine "latest" to find latest in a given line?)
 * finding changes dated after the last release is flaky if you do weird things like recreate releases... a better way might be "find changes in branch <source> not in tag <latest>"?
+
+## PECL release tool
+
+A tool to fetch and update package.xml, for a new version of the opentelemetry extension on PECL.
+
+```shell
+bin/otel release:pecl
+```
+
+Options:
+- `-v[vv]` - verbosity
+- `--force` - add a new version even if no changes detected
+
+The script will then:
+* fetch latest release
+* fetch all commits newer than last release
+* fetch `package.xml`
+* prompt for next version number
+* move existing version details into a new `release` in `<changelog>`
+* update XML with new version details
+* write updated `package.xml` to console
+
+Manual steps:
+1. copy/paste XML into `package.xml`
+2. open in IDE to check for/fix formatting and invalid XML (invalid chars should have been converted)
+3. update `php_opentelemetry.h` version info to match new version# (look for `PHP_OPENTELEMETRY_VERSION`)
+4. pear package-validate
+5. pear package (creates `opentelemetry-<version>.tar.gz`)
+6. upload .tar.gz to pecl
+7. verify (install via pecl)
+8. commit changes (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
+9. tag with new version#
