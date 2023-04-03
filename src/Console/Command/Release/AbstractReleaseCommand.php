@@ -28,7 +28,7 @@ abstract class AbstractReleaseCommand extends BaseCommand
             $headers['Authorization'] ="token {$this->token}";
         }
         $request = new Request('GET', $url, $headers);
-        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] {$request->getMethod()} ${url}");
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] {$request->getMethod()} {$url}");
 
         return $this->client->sendRequest($request);
     }
