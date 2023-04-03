@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use Nyholm\Psr7\Request;
@@ -14,15 +16,18 @@ use Psr\Http\Message\ResponseInterface;
 abstract class AbstractReleaseCommand extends BaseCommand
 {
     protected ClientInterface $client;
-    protected string $token;
+    protected ?string $token = null;
 
     protected function fetch(string $url): ResponseInterface
     {
-        $request = new Request('GET', $url, [
-            'Authorization' => "token {$this->token}",
+        $headers = [
             'Accept' => 'application/vnd.github+json',
             'User-Agent' => 'php',
-        ]);
+        ];
+        if ($this->token) {
+            $headers['Authorization'] ="token {$this->token}";
+        }
+        $request = new Request('GET', $url, $headers);
         $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] {$request->getMethod()} ${url}");
 
         return $this->client->sendRequest($request);
@@ -76,7 +81,6 @@ abstract class AbstractReleaseCommand extends BaseCommand
         }
 
         return $this->get_commits($commits_url, $repository);
-
     }
     private function get_commits(string $url, Repository $repository): array
     {

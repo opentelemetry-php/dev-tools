@@ -12,10 +12,6 @@ use OpenTelemetry\DevTools\Package\Composer\MultiRepositoryInfoResolver;
 use OpenTelemetry\DevTools\Package\Composer\PackageAttributeResolverFactory;
 use OpenTelemetry\DevTools\Package\GitSplit\ConfigResolver;
 use Symfony\Component\Console\Application as BaseApplication;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
 
 class Application extends BaseApplication
 {
@@ -41,12 +37,7 @@ class Application extends BaseApplication
                 )
             ),
             new ReleaseCommand(),
-            new PeclCommand(
-                new Serializer(
-                    [new ObjectNormalizer()],
-                    [new XmlEncoder()],
-                )
-            ),
+            new PeclCommand(),
         ]);
     }
 }

@@ -5,70 +5,35 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use DOMDocument;
+use Exception;
 use Http\Discovery\HttpClientDiscovery;
-use Jackiedo\XmlArray\Array2Xml;
-use Jackiedo\XmlArray\Xml2Array;
-use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Project;
-use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\ResponseInterface;
 use SimpleXMLElement;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Serializer\Encoder\JsonEncoder;
-use Symfony\Component\Serializer\Encoder\XmlEncoder;
-use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Yaml\Parser;
 
 class PeclCommand extends AbstractReleaseCommand
 {
     private const REPOSITORY = 'open-telemetry/opentelemetry-php-instrumentation';
-    private Serializer $serializer;
-    private bool $dry_run;
     private bool $force;
-
-    public function __construct(Serializer $serializer)
-    {
-        parent::__construct();
-        $this->serializer = $serializer;
-    }
 
     protected function configure(): void
     {
         $this
             ->setName('release:pecl')
-            ->setDescription('Prepare auto-instrumentation extension for a PECL release')
-            ->addOption('dry-run', null, InputOption::VALUE_NONE, 'dry run')
-            ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
-            ->addOption('force', ['f'],InputOption::VALUE_NONE, 'force')
+            ->setDescription('Update auto-instrumentation package.xml for PECL release')
+            ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force')
         ;
-    }
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        if (!$input->getOption('token')) {
-            $token = getenv('GITHUB_TOKEN');
-            if ($token !== false) {
-                $input->setOption('token', $token);
-            }
-        }
-        if (!$input->getOption('token')) {
-            throw new \RuntimeException('No github token provided (via --token or GITHUB_TOKEN env)');
-        }
     }
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->token = $input->getOption('token');
-        $this->dry_run = $input->getOption('dry-run');
         $this->force = $input->getOption('force');
         $this->client = HttpClientDiscovery::find();
         $this->registerInputAndOutput($input, $output);
@@ -77,6 +42,11 @@ class PeclCommand extends AbstractReleaseCommand
         $repository->downstream = $project;
         $repository->upstream = $project;
         $repository->latestRelease = $this->get_latest_release($repository);
+        if ($repository->latestRelease === null) {
+            $this->output->writeln("<error>No latest release found for {$repository->upstream}</error>");
+
+            return Command::FAILURE;
+        }
         $repository->commits = $this->get_downstream_unreleased_commits($repository);
         if (count($repository->commits) === 0) {
             $this->output->writeln("<info>No unreleased commits since {$repository->latestRelease->version}</info>");
@@ -85,10 +55,10 @@ class PeclCommand extends AbstractReleaseCommand
             }
         }
 
-        $url = sprintf("https://raw.githubusercontent.com/%s/main/package.xml", self::REPOSITORY);
+        $url = sprintf('https://raw.githubusercontent.com/%s/main/package.xml', self::REPOSITORY);
         $response = $this->fetch($url);
         if ($response->getStatusCode() !== 200) {
-            throw new \Exception("Error fetching {$url}");
+            throw new Exception("Error fetching {$url}");
         }
 
         $xml = new SimpleXMLElement($response->getBody()->getContents());
@@ -98,6 +68,9 @@ class PeclCommand extends AbstractReleaseCommand
         return Command::SUCCESS;
     }
 
+    /**
+     * @psalm-suppress PossiblyNullPropertyFetch
+     */
     private function process(Repository $repository, SimpleXMLElement $xml): void
     {
         $cnt = count($repository->commits);
@@ -136,16 +109,16 @@ class PeclCommand extends AbstractReleaseCommand
     {
         //add current release to changelog
         $release = $xml->changelog->addChild('release');
-        $release->addChild('date', (string)$xml->date);
-        $release->addChild('time', (string)$xml->time);
+        $release->addChild('date', (string) $xml->date);
+        $release->addChild('time', (string) $xml->time);
         $version = $release->addChild('version');
-        $version->addChild('release', (string)$xml->version->release);
-        $version->addChild('api', (string)$xml->version->api);
+        $version->addChild('release', (string) $xml->version->release);
+        $version->addChild('api', (string) $xml->version->api);
         $stability = $release->addChild('stability');
-        $stability->addChild('release', (string)$xml->stability->release);
-        $stability->addChild('api', (string)$xml->stability->api);
-        $release->addChild('license', (string)$xml->license);
-        $release->addChild('notes', (string)$xml->notes);
+        $stability->addChild('release', (string) $xml->stability->release);
+        $stability->addChild('api', (string) $xml->stability->api);
+        $release->addChild('license', (string) $xml->license);
+        $release->addChild('notes', (string) $xml->notes);
 
         //update new release details
         $xml->date = $new['date'];
@@ -173,7 +146,7 @@ class PeclCommand extends AbstractReleaseCommand
         foreach ($commits as $commit) {
             //only first line of commit message
             $header = strtok($commit->message, PHP_EOL);
-            $notes .= "* {$header}".PHP_EOL;
+            $notes .= "* {$header}" . PHP_EOL;
         }
 
         return $notes;

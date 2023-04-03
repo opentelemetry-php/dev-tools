@@ -9,11 +9,8 @@ use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Diff;
 use OpenTelemetry\DevTools\Console\Release\Project;
-use OpenTelemetry\DevTools\Console\Release\PullRequest;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
-use Psr\Http\Client\ClientInterface;
-use Psr\Http\Message\ResponseInterface;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
@@ -217,7 +214,7 @@ class ReleaseCommand extends AbstractReleaseCommand
         return $diff;
     }
 
-        /**
+    /**
      * @param array<Repository> $repositories
      * @return void
      */
