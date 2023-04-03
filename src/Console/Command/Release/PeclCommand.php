@@ -33,8 +33,8 @@ class PeclCommand extends AbstractReleaseCommand
 {
     private const REPOSITORY = 'open-telemetry/opentelemetry-php-instrumentation';
     private Serializer $serializer;
-    private string $source_branch;
     private bool $dry_run;
+    private bool $force;
 
     public function __construct(Serializer $serializer)
     {
@@ -49,7 +49,7 @@ class PeclCommand extends AbstractReleaseCommand
             ->setDescription('Prepare auto-instrumentation extension for a PECL release')
             ->addOption('dry-run', null, InputOption::VALUE_NONE, 'dry run')
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
-            ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
+            ->addOption('force', ['f'],InputOption::VALUE_NONE, 'force')
         ;
     }
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -68,8 +68,8 @@ class PeclCommand extends AbstractReleaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->token = $input->getOption('token');
-        $this->source_branch = $input->getOption('branch') ?? 'main';
         $this->dry_run = $input->getOption('dry-run');
+        $this->force = $input->getOption('force');
         $this->client = HttpClientDiscovery::find();
         $this->registerInputAndOutput($input, $output);
         $project = new Project(self::REPOSITORY);
@@ -80,7 +80,9 @@ class PeclCommand extends AbstractReleaseCommand
         $repository->commits = $this->get_downstream_unreleased_commits($repository);
         if (count($repository->commits) === 0) {
             $this->output->writeln("<info>No unreleased commits since {$repository->latestRelease->version}</info>");
-            return Command::SUCCESS;
+            if (!$this->force) {
+                return Command::SUCCESS;
+            }
         }
 
         $url = sprintf("https://raw.githubusercontent.com/%s/main/package.xml", self::REPOSITORY);
@@ -117,7 +119,7 @@ class PeclCommand extends AbstractReleaseCommand
             return;
         }
 
-        //hack up the XML
+        //new release data
         $release = [
             'date' => date('Y-m-d'),
             'time' => date('H:i:s'),
@@ -127,34 +129,38 @@ class PeclCommand extends AbstractReleaseCommand
             ],
             'notes' => "opentelemetry {$newVersion}" . PHP_EOL . $this->format_notes($repository->commits),
         ];
-        $s = $this->convertPackageXml($xml, $release);
-        $this->output->writeln($s);
-
+        $this->output->writeln($this->convertPackageXml($xml, $release));
     }
 
-    protected function convertPackageXml(SimpleXMLElement $xml, array $release): string
+    protected function convertPackageXml(SimpleXMLElement $xml, array $new): string
     {
-        $array = Xml2Array::convert($xml)->toArray();
-        $package = $array['package'];
-        if (!$array['package']['changelog']) {
-            $array['package']['changelog'] = [];
-        }
-        $array['package']['changelog'][] = [
-            'release' => [
-                'date' => $package['date'],
-                'time' => $package['time'],
-                'version' => $package['version'],
-                'stability' => $package['stability'],
-                'license' => $package['license'],
-                'notes' => $package['notes'],
-            ],
-        ];
-        $array['package']['date'] = $release['date'];
-        $array['package']['time'] = $release['time'];
-        $array['package']['version'] = $release['version'];
-        $array['package']['notes'] = $release['notes'];
+        //add current release to changelog
+        $release = $xml->changelog->addChild('release');
+        $release->addChild('date', (string)$xml->date);
+        $release->addChild('time', (string)$xml->time);
+        $version = $release->addChild('version');
+        $version->addChild('release', (string)$xml->version->release);
+        $version->addChild('api', (string)$xml->version->api);
+        $stability = $release->addChild('stability');
+        $stability->addChild('release', (string)$xml->stability->release);
+        $stability->addChild('api', (string)$xml->stability->api);
+        $release->addChild('license', (string)$xml->license);
+        $release->addChild('notes', (string)$xml->notes);
 
-        return Array2Xml::convert($array, ['rootElement' => null])->toXml(true);
+        //update new release details
+        $xml->date = $new['date'];
+        $xml->time = $new['time'];
+        $xml->version->release = $new['version']['release'];
+        $xml->version->api = $new['version']['api'];
+        $xml->notes = $new['notes'];
+
+        //prettify
+        $pretty = new DOMDocument();
+        $pretty->preserveWhiteSpace = false;
+        $pretty->formatOutput = true;
+        $pretty->loadXML($xml->saveXML());
+
+        return $pretty->saveXML();
     }
 
     /**
@@ -163,12 +169,13 @@ class PeclCommand extends AbstractReleaseCommand
      */
     private function format_notes(array $commits): string
     {
-        $notes = PHP_EOL;
+        $notes = '';
         foreach ($commits as $commit) {
             //only first line of commit message
             $header = strtok($commit->message, PHP_EOL);
             $notes .= "* {$header}".PHP_EOL;
         }
+
         return $notes;
     }
 }
