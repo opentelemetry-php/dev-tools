@@ -30,6 +30,7 @@ class ReleaseCommand extends AbstractReleaseCommand
     private Parser $parser;
     private string $source_branch;
     private bool $dry_run;
+    private bool $force;
 
     protected function configure(): void
     {
@@ -40,6 +41,7 @@ class ReleaseCommand extends AbstractReleaseCommand
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
             ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
             ->addOption('repo', ['r'], InputOption::VALUE_OPTIONAL, 'repo to handle (core, contrib)')
+            ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force new releases even if no changes')
         ;
     }
     protected function interact(InputInterface $input, OutputInterface $output)
@@ -60,6 +62,7 @@ class ReleaseCommand extends AbstractReleaseCommand
         $this->token = $input->getOption('token');
         $this->source_branch = $input->getOption('branch') ?? 'main';
         $this->dry_run = $input->getOption('dry-run');
+        $this->force = $input->getOption('force');
         $source = $input->getOption('repo');
         if ($source && !array_key_exists($source, self::AVAILABLE_REPOS)) {
             $options = implode(',', array_keys(self::AVAILABLE_REPOS));
@@ -221,7 +224,7 @@ class ReleaseCommand extends AbstractReleaseCommand
     private function publish_repositories(array $repositories): void
     {
         foreach ($repositories as $repo) {
-            if (count($repo->commits) === 0) {
+            if (count($repo->commits) === 0 && !$this->force) {
                 $this->output->isVerbose() && $this->output->writeln("<info>[SKIP] {$repo->downstream} (no new commits)</info>");
 
                 continue;
