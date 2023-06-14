@@ -77,9 +77,11 @@ Manual steps:
 1. copy/paste XML into `package.xml`
 2. open in IDE to check for/fix formatting and invalid XML (invalid chars should have been converted)
 3. update `php_opentelemetry.h` version info to match new version# (look for `PHP_OPENTELEMETRY_VERSION`)
-4. pear package-validate
-5. pear package (creates `opentelemetry-<version>.tar.gz`)
-6. upload .tar.gz to pecl
-7. verify (install via pecl)
-8. commit changes (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
-9. tag with new version#
+4. in opentelemetry-php-instrumentation checkout, run `docker compose run debian bash`, then:
+  * pear package-validate
+  * pear package (creates `opentelemetry-<version>.tar.gz`)
+5. submit a PR (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
+6. get approval and merge PR
+7. tag next release, using auto-generated release notes (optionally, remove the "release prep" line item)
+8. upload .tar.gz to pecl: https://pecl.php.net/release-upload.php
+9. verify (install via pecl)

@@ -8,4 +8,5 @@
 #  https://help.github.com/en/articles/about-code-owners
 #
 
-* @open-telemetry/php-approvers
+* @brettmc @bobstrecansky @pdelewski
+# note that open-telemetry/php-approvers does not exist in this organization
