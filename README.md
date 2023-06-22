@@ -45,6 +45,7 @@ Once all the info has been gathered, it will iterate over each repo with unrelea
 * list the changes
 * display the last release version, and ask for new version
 * ask if new release should be latest
+* ask if the new release should be a draft (eg so you can manually adjust the notes)
 * generate release notes
 * create the release (unless `--dry-run` was specified)
 

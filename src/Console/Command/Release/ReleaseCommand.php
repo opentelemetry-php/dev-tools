@@ -261,6 +261,8 @@ class ReleaseCommand extends AbstractReleaseCommand
         $release->version = $newVersion;
         $question = new ConfirmationQuestion('<question>Make this the latest release (Y/n)?</question>', true);
         $makeLatest = $helper->ask($this->input, $this->output, $question);
+        $question = new ConfirmationQuestion('<question>Make this release a draft (y/N)?</question>', false);
+        $isDraft = $helper->ask($this->input, $this->output, $question);
         $notes = [];
         if ($repository->latestRelease === null) {
             $notes[] = 'Initial release';
@@ -274,10 +276,10 @@ class ReleaseCommand extends AbstractReleaseCommand
         }
         $release->notes = implode(PHP_EOL, $notes);
 
-        $this->do_release($repository, $release, $makeLatest);
+        $this->do_release($repository, $release, $makeLatest, $isDraft);
     }
 
-    private function do_release(Repository $repository, Release $release, bool $makeLatest)
+    private function do_release(Repository $repository, Release $release, bool $makeLatest, bool $isDraft)
     {
         $url = "https://api.github.com/repos/{$repository->downstream}/releases";
         $body = json_encode([
@@ -285,7 +287,7 @@ class ReleaseCommand extends AbstractReleaseCommand
             'target_commitish' => $this->source_branch,
             'name' => "Release {$release->version}",
             'body' => $release->notes,
-            'draft' => false,
+            'draft' => $isDraft,
             'prerelease' => false,
             'generate_release_notes' => false,
             'make_latest' => $makeLatest ? 'true' : 'false',

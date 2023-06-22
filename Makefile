@@ -33,6 +33,4 @@ style:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no -vvv
 phpmetrics:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpmetrics --config=./phpmetrics.json --junit=junit.xml
-foo:
-	echo $(PHP_VERSION)
 FORCE:
