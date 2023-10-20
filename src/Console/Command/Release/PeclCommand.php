@@ -6,7 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use DOMDocument;
 use Exception;
-use Http\Discovery\HttpClientDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\Repository;
@@ -35,7 +35,7 @@ class PeclCommand extends AbstractReleaseCommand
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->force = $input->getOption('force');
-        $this->client = HttpClientDiscovery::find();
+        $this->client = Psr18ClientDiscovery::find();
         $this->registerInputAndOutput($input, $output);
         $project = new Project(self::REPOSITORY);
         $repository = new Repository();
@@ -55,7 +55,7 @@ class PeclCommand extends AbstractReleaseCommand
             }
         }
 
-        $url = sprintf('https://raw.githubusercontent.com/%s/main/package.xml', self::REPOSITORY);
+        $url = sprintf('https://raw.githubusercontent.com/%s/main/ext/package.xml', self::REPOSITORY);
         $response = $this->fetch($url);
         if ($response->getStatusCode() !== 200) {
             throw new Exception("Error fetching {$url}");
