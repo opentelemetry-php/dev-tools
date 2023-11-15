@@ -49,10 +49,6 @@ Once all the info has been gathered, it will iterate over each repo with unrelea
 * generate release notes
 * create the release (unless `--dry-run` was specified)
 
-### TODO
-* in the future, we may have multiple release branches (`1.x`, `2.x`) (may need to redefine "latest" to find latest in a given line?)
-* finding changes dated after the last release is flaky if you do weird things like recreate releases... a better way might be "find changes in branch <source> not in tag <latest>"?
-
 ## PECL release tool
 
 A tool to fetch and update package.xml, for a new version of the opentelemetry extension on PECL.
@@ -78,11 +74,10 @@ Manual steps:
 1. copy/paste XML into `package.xml`
 2. open in IDE to check for/fix formatting and invalid XML (invalid chars should have been converted)
 3. update `php_opentelemetry.h` version info to match new version# (look for `PHP_OPENTELEMETRY_VERSION`)
-4. in opentelemetry-php-instrumentation checkout, run `docker compose run debian bash`, then:
-  * pear package-validate
-  * pear package (creates `opentelemetry-<version>.tar.gz`)
-5. submit a PR (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
-6. get approval and merge PR
-7. tag next release, using auto-generated release notes (optionally, remove the "release prep" line item)
-8. upload .tar.gz to pecl: https://pecl.php.net/release-upload.php
-9. verify (install via pecl)
+4. submit a PR (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
+5. get approval and merge PR
+6. tag next release: `bin/otel tag:pecl`
+7. wait for github workflow to run, eyeball it, then publish it
+8. download and unzip the `opentelemetry-pecl` artifact from the release (containing `opentelemetry-<version>.tar.gz`)
+9. upload `opentelemetry-<version>.tar.gz` to pecl: https://pecl.php.net/release-upload.php
+10. verify (install via pecl)

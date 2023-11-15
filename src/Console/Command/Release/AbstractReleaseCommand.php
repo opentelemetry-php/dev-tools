@@ -18,17 +18,31 @@ abstract class AbstractReleaseCommand extends BaseCommand
     protected ClientInterface $client;
     protected ?string $token = null;
 
-    protected function fetch(string $url): ResponseInterface
+    protected function headers(): array
     {
         $headers = [
             'Accept' => 'application/vnd.github+json',
-            'User-Agent' => 'php',
+            'User-Agent' => 'php-' . PHP_VERSION,
+            'X-GitHub-Api-Version' => '2022-11-28',
         ];
         if ($this->token) {
-            $headers['Authorization'] ="token {$this->token}";
+            $headers['Authorization'] ="Bearer {$this->token}";
         }
-        $request = new Request('GET', $url, $headers);
-        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] {$request->getMethod()} {$url}");
+        return $headers;
+    }
+
+    protected function fetch(string $url): ResponseInterface
+    {
+        $request = new Request('GET', $url, $this->headers());
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] GET {$url}");
+
+        return $this->client->sendRequest($request);
+    }
+
+    protected function post(string $url, string $body): ResponseInterface
+    {
+        $request = new Request('POST', $url, $this->headers(), $body);
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] POST {$url}");
 
         return $this->client->sendRequest($request);
     }
@@ -127,5 +141,24 @@ abstract class AbstractReleaseCommand extends BaseCommand
         $pr->title = $row->title;
 
         return $pr;
+    }
+
+    protected function get_sha_for_branch(Repository $repository, string $branch): string
+    {
+        $refs_url = "https://api.github.com/repos/{$repository->upstream}/git/matching-refs/heads/{$branch}";
+        $response = $this->fetch($refs_url);
+        if ($response->getStatusCode() !== 200) {
+            $this->output->isDebug() && $this->output->writeln($response->getBody()->getContents());
+            throw new \Exception("Error {$response->getStatusCode()} retrieving branch refs for {$branch}");
+        }
+        $json = json_decode($response->getBody()->getContents());
+        if (count($json) === 0) {
+            throw new \RuntimeException("No matching refs found for branch: {$branch}");
+        }
+        $ref = $json[0];
+
+        $this->output->isVerbose() && $this->output->writeln("Found ref: {$ref->ref} SHA: {$ref->object->sha}");
+
+        return $ref->object->sha;
     }
 }

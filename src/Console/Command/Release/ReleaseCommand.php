@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OpenTelemetry\DevTools\Console\Command\Release;
 
-use Http\Discovery\HttpClientDiscovery;
+use Http\Discovery\Psr18ClientDiscovery;
 use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Diff;
@@ -69,7 +69,7 @@ class ReleaseCommand extends AbstractReleaseCommand
             $this->output->writeln("<error>Invalid source: {$source}. Options: {$options}</error>");
         }
         $this->sources = $source ? [$source => self::AVAILABLE_REPOS[$source]] : self::AVAILABLE_REPOS;
-        $this->client = HttpClientDiscovery::find();
+        $this->client = Psr18ClientDiscovery::find();
         $this->parser = new Parser();
         $this->registerInputAndOutput($input, $output);
 
@@ -292,19 +292,13 @@ class ReleaseCommand extends AbstractReleaseCommand
             'generate_release_notes' => false,
             'make_latest' => $makeLatest ? 'true' : 'false',
         ]);
-        $request = new Request('POST', $url, [
-            'Accept' => 'application/vnd.github+json',
-            'Authorization' => "Bearer {$this->token}",
-            'User-Agent' => 'php-' . PHP_VERSION,
-            'X-GitHub-Api-Version' => '2022-11-28',
-        ], $body);
         $this->output->isDebug() && $this->output->writeln($body);
         if ($this->dry_run) {
             $this->output->writeln("[DRY-RUN] {$url}");
 
             return;
         }
-        $response = $this->client->sendRequest($request);
+        $response = $this->post($url, $body);
         if ($response->getStatusCode() !== 201) {
             $this->output->writeln("<error>[ERROR] ({$response->getStatusCode()}) {$response->getBody()->getContents()}</error>");
         } else {
