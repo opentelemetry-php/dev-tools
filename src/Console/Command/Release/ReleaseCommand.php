@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use Http\Discovery\Psr18ClientDiscovery;
-use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Diff;
 use OpenTelemetry\DevTools\Console\Release\Project;

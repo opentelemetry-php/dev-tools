@@ -43,6 +43,9 @@ class PeclTagCommand extends AbstractReleaseCommand
         }
     }
 
+    /**
+     * @psalm-suppress PossiblyNullPropertyFetch
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->token = $input->getOption('token');
@@ -64,7 +67,7 @@ class PeclTagCommand extends AbstractReleaseCommand
         $helper = new QuestionHelper();
         $newVersion = $helper->ask($this->input, $this->output, $question);
         if (!$newVersion) {
-            $this->output->writeln("<info>[SKIP] not going to tag</info>");
+            $this->output->writeln('<info>[SKIP] not going to tag</info>');
 
             return Command::SUCCESS;
         }
@@ -84,7 +87,7 @@ class PeclTagCommand extends AbstractReleaseCommand
             'tag' => $tag,
             'message' => $message,
             'object' => $sha,
-            'type' => 'commit'
+            'type' => 'commit',
         ], JSON_UNESCAPED_SLASHES);
         if ($this->dry_run) {
             $this->output->writeln("[DRY-RUN] POST {$url}");
@@ -94,6 +97,7 @@ class PeclTagCommand extends AbstractReleaseCommand
         $response = $this->post($url, $body);
         if ($response->getStatusCode() !== 201) {
             $this->output->writeln("<error>[ERROR] ({$response->getStatusCode()}) {$response->getBody()->getContents()}</error>");
+
             return;
         }
         $json = json_decode($response->getBody()->getContents());
@@ -111,6 +115,7 @@ class PeclTagCommand extends AbstractReleaseCommand
         ], JSON_UNESCAPED_SLASHES);
         if ($this->dry_run) {
             $this->output->writeln("[DRY-RUN] POST {$url} {$body}");
+
             return;
         }
         $response = $this->post($url, $body);

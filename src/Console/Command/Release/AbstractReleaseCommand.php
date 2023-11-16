@@ -28,6 +28,7 @@ abstract class AbstractReleaseCommand extends BaseCommand
         if ($this->token) {
             $headers['Authorization'] ="Bearer {$this->token}";
         }
+
         return $headers;
     }
 
@@ -149,6 +150,7 @@ abstract class AbstractReleaseCommand extends BaseCommand
         $response = $this->fetch($refs_url);
         if ($response->getStatusCode() !== 200) {
             $this->output->isDebug() && $this->output->writeln($response->getBody()->getContents());
+
             throw new \Exception("Error {$response->getStatusCode()} retrieving branch refs for {$branch}");
         }
         $json = json_decode($response->getBody()->getContents());
