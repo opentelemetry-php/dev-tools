@@ -54,7 +54,7 @@ abstract class AbstractReleaseCommand extends BaseCommand
 
         $response = $this->fetch($release_url);
         if ($response->getStatusCode() === 404) {
-            $this->output->writeln('<error>No latest release found</error>');
+            $this->output->writeln("<info>[{$repository->downstream}] No latest release found</info>");
 
             return null;
         }
