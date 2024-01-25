@@ -12,9 +12,16 @@ A tool to find unreleased changes for OpenTelemetry, create new releases with re
 You need to be an administrator/owner of [opentelemetry-php](https://github.com/opentelemetry-php) to actually create releases. A lower-privileged account
 should be able to do everything else, but will fail if you try to create a release.
 
-You need to [create a fine-grained github access token](https://github.com/settings/personal-access-tokens/new) with:
+You need to [create a fine-grained github access token](https://github.com/settings/personal-access-tokens/new) to be able to create a release.
+
+For everything under `opentelemetry-php` (almost everything, ie the gitsplit destination):
 * resource owner: `opentelemetry-php`
 * repository access: `all repositories`
+* permissions: `contents:read-and-write`
+
+For `opentelemetry-php-instrumentation` (the extension):
+* resouce owner: `open-telemetry`
+* repository access: (only selected) `open-telemetry/opentelemetry-php-instrumentation`
 * permissions: `contents:read-and-write`
 
 You can provide the token either via the `GITHUB_TOKEN` env var (preferred), or the `--token=` CLI option.
@@ -51,6 +58,7 @@ Once all the info has been gathered, it will iterate over each repo with unrelea
 
 ## PECL release tool
 
+### Generate updated `package.xml`
 A tool to fetch and update package.xml, for a new version of the opentelemetry extension on PECL.
 
 ```shell
@@ -77,7 +85,7 @@ Manual steps:
 4. submit a PR (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
 5. get approval and merge PR
 6. tag next release: `bin/otel tag:pecl`
-7. wait for github workflow to run, eyeball it, then publish it
+7. wait for github workflow to run to completion. it will create a draft release: check that it looks ok, then publish it
 8. download and unzip the `opentelemetry-pecl` artifact from the release (containing `opentelemetry-<version>.tar.gz`)
 9. upload `opentelemetry-<version>.tar.gz` to pecl: https://pecl.php.net/release-upload.php
 10. verify (install via pecl)

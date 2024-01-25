@@ -7,7 +7,6 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 use DOMDocument;
 use Exception;
 use Http\Discovery\Psr18ClientDiscovery;
-use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\Repository;
 use SimpleXMLElement;
@@ -20,7 +19,9 @@ use Symfony\Component\Console\Question\Question;
 
 class PeclCommand extends AbstractReleaseCommand
 {
-    private const REPOSITORY = 'open-telemetry/opentelemetry-php-instrumentation';
+    private const OWNER = 'open-telemetry';
+    private const REPO = 'opentelemetry-php-instrumentation';
+    private const REPOSITORY = self::OWNER . '/' . self::REPO;
     private bool $force;
 
     protected function configure(): void
@@ -100,7 +101,7 @@ class PeclCommand extends AbstractReleaseCommand
                 'release' => $newVersion,
                 'api' => '1.0',
             ],
-            'notes' => "opentelemetry {$newVersion}" . PHP_EOL . $this->format_notes($repository->commits),
+            'notes' => $this->format_notes($newVersion),
         ];
         $this->output->writeln($this->convertPackageXml($xml, $release));
     }
@@ -136,19 +137,8 @@ class PeclCommand extends AbstractReleaseCommand
         return $pretty->saveXML();
     }
 
-    /**
-     * @param array<Commit> $commits
-     * @return string
-     */
-    private function format_notes(array $commits): string
+    private function format_notes(string $version): string
     {
-        $notes = '';
-        foreach ($commits as $commit) {
-            //only first line of commit message
-            $header = strtok($commit->message, PHP_EOL);
-            $notes .= "* {$header}" . PHP_EOL;
-        }
-
-        return $notes;
+        return sprintf('See https://github.com/%s/%s/releases/tag/%s', self::OWNER, self::REPO, $version);
     }
 }

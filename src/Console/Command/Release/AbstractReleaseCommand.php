@@ -43,7 +43,8 @@ abstract class AbstractReleaseCommand extends BaseCommand
     protected function post(string $url, string $body): ResponseInterface
     {
         $request = new Request('POST', $url, $this->headers(), $body);
-        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP] POST {$url}");
+        $this->output->isVerbose() && $this->output->writeln("[HTTP] POST {$url}");
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP body] {$body}");
 
         return $this->client->sendRequest($request);
     }

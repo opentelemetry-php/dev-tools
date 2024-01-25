@@ -97,6 +97,7 @@ class PeclTagCommand extends AbstractReleaseCommand
         $response = $this->post($url, $body);
         if ($response->getStatusCode() !== 201) {
             $this->output->writeln("<error>[ERROR] ({$response->getStatusCode()}) {$response->getBody()->getContents()}</error>");
+            $this->output->writeln('[HELP] X-Accepted-GitHub-Permissions: ' . $response->getHeaderLine('X-Accepted-GitHub-Permissions'));
 
             return;
         }
