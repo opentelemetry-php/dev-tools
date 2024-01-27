@@ -12,9 +12,16 @@ A tool to find unreleased changes for OpenTelemetry, create new releases with re
 You need to be an administrator/owner of [opentelemetry-php](https://github.com/opentelemetry-php) to actually create releases. A lower-privileged account
 should be able to do everything else, but will fail if you try to create a release.
 
-You need to [create a fine-grained github access token](https://github.com/settings/personal-access-tokens/new) with:
+You need to [create a fine-grained github access token](https://github.com/settings/personal-access-tokens/new) to be able to create a release.
+
+For everything under `opentelemetry-php` (almost everything, ie the gitsplit destination):
 * resource owner: `opentelemetry-php`
 * repository access: `all repositories`
+* permissions: `contents:read-and-write`
+
+For `opentelemetry-php-instrumentation` (the extension):
+* resouce owner: `open-telemetry`
+* repository access: (only selected) `open-telemetry/opentelemetry-php-instrumentation`
 * permissions: `contents:read-and-write`
 
 You can provide the token either via the `GITHUB_TOKEN` env var (preferred), or the `--token=` CLI option.
