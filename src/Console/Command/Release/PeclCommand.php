@@ -95,7 +95,7 @@ class PeclCommand extends AbstractReleaseCommand
         }
 
         $question = new ChoiceQuestion(
-            "<question>Is this a beta or stable release?</question>",
+            '<question>Is this a beta or stable release?</question>',
             ['stable', 'beta'],
             'stable',
         );
