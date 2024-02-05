@@ -58,6 +58,7 @@ Once all the info has been gathered, it will iterate over each repo with unrelea
 
 ## PECL release tool
 
+### Generate updated `package.xml`
 A tool to fetch and update package.xml, for a new version of the opentelemetry extension on PECL.
 
 ```shell
@@ -84,7 +85,7 @@ Manual steps:
 4. submit a PR (`package.xml` + `php_opentelemetry.h`) back to [opentelemetry-php-instrumentation](https://github.com/open-telemetry/opentelemetry-php-instrumentation)
 5. get approval and merge PR
 6. tag next release: `bin/otel tag:pecl`
-7. wait for github workflow to run, eyeball it, then publish it
+7. wait for github workflow to run to completion. it will create a draft release: check that it looks ok, then publish it
 8. download and unzip the `opentelemetry-pecl` artifact from the release (containing `opentelemetry-<version>.tar.gz`)
 9. upload `opentelemetry-<version>.tar.gz` to pecl: https://pecl.php.net/release-upload.php
 10. verify (install via pecl)
