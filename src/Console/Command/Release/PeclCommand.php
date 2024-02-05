@@ -15,6 +15,7 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\Question;
 
 class PeclCommand extends AbstractReleaseCommand
@@ -93,6 +94,13 @@ class PeclCommand extends AbstractReleaseCommand
             return;
         }
 
+        $question = new ChoiceQuestion(
+            '<question>Is this a beta or stable release?</question>',
+            ['stable', 'beta'],
+            'stable',
+        );
+        $stability = $helper->ask($this->input, $this->output, $question);
+
         //new release data
         $release = [
             'date' => date('Y-m-d'),
@@ -100,6 +108,10 @@ class PeclCommand extends AbstractReleaseCommand
             'version' => [
                 'release' => $newVersion,
                 'api' => '1.0',
+            ],
+            'stability' => [
+                'release' => $stability,
+                'api' => 'stable',
             ],
             'notes' => $this->format_notes($newVersion),
         ];
@@ -126,6 +138,8 @@ class PeclCommand extends AbstractReleaseCommand
         $xml->time = $new['time'];
         $xml->version->release = $new['version']['release'];
         $xml->version->api = $new['version']['api'];
+        $xml->stability->release = $new['stability']['release'];
+        $xml->stability->api = $new['stability']['api'];
         $xml->notes = $new['notes'];
 
         //prettify
