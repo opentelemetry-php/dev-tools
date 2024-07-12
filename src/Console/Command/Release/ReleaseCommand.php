@@ -40,6 +40,7 @@ class ReleaseCommand extends AbstractReleaseCommand
             ->addOption('token', ['t'], InputOption::VALUE_OPTIONAL, 'github token')
             ->addOption('branch', null, InputOption::VALUE_OPTIONAL, 'branch to tag off (default: main)')
             ->addOption('repo', ['r'], InputOption::VALUE_OPTIONAL, 'repo to handle (core, contrib)')
+            ->addOption('filter', null, InputOption::VALUE_OPTIONAL, 'filter by repository prefix')
             ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force new releases even if no changes')
         ;
     }
@@ -63,6 +64,7 @@ class ReleaseCommand extends AbstractReleaseCommand
         $this->dry_run = $input->getOption('dry-run');
         $this->force = $input->getOption('force');
         $source = $input->getOption('repo');
+        $filter = $input->getOption('filter');
         if ($source && !array_key_exists($source, self::AVAILABLE_REPOS)) {
             $options = implode(',', array_keys(self::AVAILABLE_REPOS));
             $this->output->writeln("<error>Invalid source: {$source}. Options: {$options}</error>");
@@ -75,7 +77,7 @@ class ReleaseCommand extends AbstractReleaseCommand
         $repositories = [];
 
         try {
-            $found = $this->find_repositories();
+            $found = $this->find_repositories($filter);
         } catch (\Exception $e) {
             $this->output->writeln("<error>{$e->getCode()} {$e->getMessage()}</error>");
 
@@ -104,18 +106,18 @@ class ReleaseCommand extends AbstractReleaseCommand
      * @throws \Exception
      * @return array<Repository>
      */
-    private function find_repositories(): array
+    private function find_repositories(?string $filter): array
     {
         $repositories = [];
         foreach ($this->sources as $key => $repo) {
             $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key} ({$repo})</info>");
-            $repositories = array_merge($repositories, $this->get_gitsplit_repositories($repo));
+            $repositories = array_merge($repositories, $this->get_gitsplit_repositories($repo, $filter));
         }
 
         return $repositories;
     }
 
-    private function get_gitsplit_repositories(string $repo): array
+    private function get_gitsplit_repositories(string $repo, ?string $filter): array
     {
         $url = "https://raw.githubusercontent.com/{$repo}/main/.gitsplit.yml";
         $response = $this->fetch($url);
@@ -127,12 +129,22 @@ class ReleaseCommand extends AbstractReleaseCommand
         $repositories = [];
         $this->output->isVeryVerbose() && $this->output->writeln('[RESPONSE]' . json_encode($yaml['splits']));
         foreach ($yaml['splits'] as $entry) {
+            $prefix = $entry['prefix'];
+            if ($filter && !str_contains($prefix, $filter)) {
+                $this->output->isVerbose() && $this->output->writeln(sprintf('[SKIP] %s does not match filter: %s', $prefix, $filter));
+
+                continue;
+            }
             $repository = new Repository();
             $repository->upstream = new Project($repo);
-            $repository->upstream->path = $entry['prefix'];
+            $repository->upstream->path = $prefix;
             $target = $entry['target'];
             $repository->downstream = new Project(str_replace(['https://${GH_TOKEN}@github.com/', '.git'], ['',''], $target));
             $repositories[] = $repository;
+        }
+
+        if ($this->output->isVeryVerbose()) {
+            $this->output->writeln('[FOUND]' . json_encode($repositories));
         }
 
         return $repositories;

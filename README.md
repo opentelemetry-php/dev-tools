@@ -39,6 +39,7 @@ Options:
 - `--branch=` - github branch to tag from
 - `--dry-run` - do not make any changes
 - `--repo=` - choose a single upstream repo to run against (default: all)
+- `--filter=` - filter repositories by prefix
 
 The script will then:
 * fetch `.gitsplit.yaml` from source repositories
