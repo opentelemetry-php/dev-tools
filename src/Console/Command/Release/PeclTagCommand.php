@@ -30,19 +30,6 @@ class PeclTagCommand extends AbstractReleaseCommand
         ;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        if (!$input->getOption('token')) {
-            $token = getenv('GITHUB_TOKEN');
-            if ($token !== false) {
-                $input->setOption('token', $token);
-            }
-        }
-        if (!$input->getOption('token')) {
-            throw new \RuntimeException('No github token provided (via --token or GITHUB_TOKEN env)');
-        }
-    }
-
     /**
      * @psalm-suppress PossiblyNullPropertyFetch
      */

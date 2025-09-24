@@ -11,9 +11,11 @@ use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\ProgressBar;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
@@ -21,12 +23,6 @@ use Symfony\Component\Yaml\Parser;
 
 class ReleaseCommand extends AbstractReleaseCommand
 {
-    private const AVAILABLE_REPOS = [
-        'core'    => 'open-telemetry/opentelemetry-php',
-        'contrib' => 'open-telemetry/opentelemetry-php-contrib',
-    ];
-    private array $sources = [];
-    private Parser $parser;
     private string $source_branch;
     private bool $dry_run;
     private bool $force;
@@ -59,6 +55,7 @@ class ReleaseCommand extends AbstractReleaseCommand
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        assert($output instanceof ConsoleOutputInterface);
         $this->token = $input->getOption('token');
         $this->source_branch = $input->getOption('branch') ?? 'main';
         $this->dry_run = $input->getOption('dry-run');
@@ -72,7 +69,9 @@ class ReleaseCommand extends AbstractReleaseCommand
         $this->sources = $source ? [$source => self::AVAILABLE_REPOS[$source]] : self::AVAILABLE_REPOS;
         $this->client = Psr18ClientDiscovery::find();
         $this->parser = new Parser();
-        $this->registerInputAndOutput($input, $output);
+        $progress_section = $output->section();
+        $main_section = $output->section();
+        $this->registerInputAndOutput($input, $main_section);
 
         $repositories = [];
 
@@ -88,66 +87,24 @@ class ReleaseCommand extends AbstractReleaseCommand
 
             return Command::FAILURE;
         }
-        foreach ($found as $rep) {
-            $repository = $this->populate_release_details($rep);
+        $bar = new ProgressBar($progress_section, count($found));
+        $bar->start();
+        foreach ($found as $repository) {
+            $bar->setMessage($repository->downstream->project);
+            $repository = $this->populate_release_details($repository);
 
             if ($this->compare_diffs_to_unreleased($repository) === false) {
                 $this->output->writeln("[SKIP] Skipping {$repository->downstream} due to differences");
             } else {
                 $repositories[] = $repository;
             }
+            $bar->advance();
+
         }
+        $bar->finish();
         $this->publish_repositories($repositories);
 
         return Command::SUCCESS;
-    }
-
-    /**
-     * @throws \Exception
-     * @return array<Repository>
-     */
-    private function find_repositories(?string $filter): array
-    {
-        $repositories = [];
-        foreach ($this->sources as $key => $repo) {
-            $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key} ({$repo})</info>");
-            $repositories = array_merge($repositories, $this->get_gitsplit_repositories($repo, $filter));
-        }
-
-        return $repositories;
-    }
-
-    private function get_gitsplit_repositories(string $repo, ?string $filter): array
-    {
-        $url = "https://raw.githubusercontent.com/{$repo}/main/.gitsplit.yml";
-        $response = $this->fetch($url);
-        if ($response->getStatusCode() !== 200) {
-            throw new \Exception("Error fetching {$url}");
-        }
-
-        $yaml = $this->parser->parse($response->getBody()->getContents());
-        $repositories = [];
-        $this->output->isVeryVerbose() && $this->output->writeln('[RESPONSE]' . json_encode($yaml['splits']));
-        foreach ($yaml['splits'] as $entry) {
-            $prefix = $entry['prefix'];
-            if ($filter && !str_contains($prefix, $filter)) {
-                $this->output->isVerbose() && $this->output->writeln(sprintf('[SKIP] %s does not match filter: %s', $prefix, $filter));
-
-                continue;
-            }
-            $repository = new Repository();
-            $repository->upstream = new Project($repo);
-            $repository->upstream->path = $prefix;
-            $target = $entry['target'];
-            $repository->downstream = new Project(str_replace(['https://${GH_TOKEN}@github.com/', '.git'], ['',''], $target));
-            $repositories[] = $repository;
-        }
-
-        if ($this->output->isVeryVerbose()) {
-            $this->output->writeln('[FOUND]' . json_encode($repositories));
-        }
-
-        return $repositories;
     }
 
     /**
@@ -194,9 +151,15 @@ class ReleaseCommand extends AbstractReleaseCommand
 
         $differences = array_diff($diffCommits, $foundCommits);
         if (count($differences) !== 0) {
-            $this->output->writeln('<error>Downstream compare contains commit differences to upstream search</error>');
+            $this->output->writeln('<comment>⚠️  Warning: The following commits are present downstream but not found upstream:</comment>');
+            foreach ($differences as $diff) {
+                $this->output->writeln('<comment>  • ' . $diff . '</comment>');
+            }
+            $this->output->writeln('<comment>Please review these differences before continuing.</comment>');
 
-            return false;
+            $helper = new QuestionHelper();
+            $question = new ConfirmationQuestion('<question>Do you want to continue despite these differences? (y/N):</question> ', false);
+            return $helper->ask($this->input, $this->output, $question);
         }
 
         return true;

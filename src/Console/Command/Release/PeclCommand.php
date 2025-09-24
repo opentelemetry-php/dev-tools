@@ -23,7 +23,6 @@ class PeclCommand extends AbstractReleaseCommand
     private const OWNER = 'open-telemetry';
     private const REPO = 'opentelemetry-php-instrumentation';
     private const REPOSITORY = self::OWNER . '/' . self::REPO;
-    private bool $force;
 
     protected function configure(): void
     {
@@ -34,9 +33,14 @@ class PeclCommand extends AbstractReleaseCommand
         ;
     }
 
+    protected function interact(InputInterface $input, OutputInterface $output): void
+    {
+        //no-op
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->force = $input->getOption('force');
+        $force = $input->getOption('force');
         $this->client = Psr18ClientDiscovery::find();
         $this->registerInputAndOutput($input, $output);
         $project = new Project(self::REPOSITORY);
@@ -52,7 +56,7 @@ class PeclCommand extends AbstractReleaseCommand
         $repository->commits = $this->get_downstream_unreleased_commits($repository);
         if (count($repository->commits) === 0) {
             $this->output->writeln("<info>No unreleased commits since {$repository->latestRelease->version}</info>");
-            if (!$this->force) {
+            if (!$force) {
                 return Command::SUCCESS;
             }
         }
