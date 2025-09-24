@@ -160,7 +160,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 string $commandClass,
                 InputInterface $input,
                 OutputInterface $output,
-                string $workingDirectory = null
+                ?string $workingDirectory = null
             ): int {
                 return $this->createAndRunCommand(
                     $commandClass,
@@ -174,7 +174,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 Command $command,
                 InputInterface $input,
                 OutputInterface $output,
-                string $workingDirectory = null
+                ?string $workingDirectory = null
             ): int {
                 return $this->runCommand(
                     $command,
