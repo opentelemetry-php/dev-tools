@@ -19,6 +19,7 @@ class SingleRepositoryTraitTest extends AbstractRepositoryTest
 
     private SingleRepositoryInterface $repository;
 
+    #[\Override]
     public function setUp(): void
     {
         $this->repository = $this->createInstance();
@@ -77,6 +78,7 @@ class SingleRepositoryTraitImplementation implements SingleRepositoryInterface
 {
     use SingleRepositoryTrait;
 
+    #[\Override]
     protected function setType(): void
     {
         $this->type = SingleRepositoryTraitTest::REPOSITORY_TYPE;

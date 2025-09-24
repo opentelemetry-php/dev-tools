@@ -65,6 +65,7 @@ class PackageTraitTest extends TestCase
                 $this->name = PackageTraitTest::ATTRIBUTES[PackageInterface::NAME_ATTRIBUTE];
             }
 
+            #[\Override]
             public function getType(): string
             {
                 return PackageTraitTest::ATTRIBUTES[PackageInterface::TYPE_ATTRIBUTE];

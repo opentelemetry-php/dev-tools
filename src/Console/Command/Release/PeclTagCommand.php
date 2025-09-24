@@ -19,6 +19,7 @@ class PeclTagCommand extends AbstractReleaseCommand
     private const REPOSITORY = 'open-telemetry/opentelemetry-php-instrumentation';
     private bool $dry_run;
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -30,22 +31,10 @@ class PeclTagCommand extends AbstractReleaseCommand
         ;
     }
 
-    protected function interact(InputInterface $input, OutputInterface $output)
-    {
-        if (!$input->getOption('token')) {
-            $token = getenv('GITHUB_TOKEN');
-            if ($token !== false) {
-                $input->setOption('token', $token);
-            }
-        }
-        if (!$input->getOption('token')) {
-            throw new \RuntimeException('No github token provided (via --token or GITHUB_TOKEN env)');
-        }
-    }
-
     /**
      * @psalm-suppress PossiblyNullPropertyFetch
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->token = $input->getOption('token');

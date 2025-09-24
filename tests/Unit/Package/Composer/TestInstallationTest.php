@@ -41,6 +41,7 @@ class TestInstallationTest extends TestCase
     private vfsStreamDirectory $root;
     private string $testDirectory;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->root = vfsStream::setup(self::ROOT_DIR);

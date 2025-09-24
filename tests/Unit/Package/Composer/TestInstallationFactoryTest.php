@@ -23,6 +23,7 @@ class TestInstallationFactoryTest extends TestCase
     private TestInstallationFactory $instance;
     private TestConfigFactory $testConfigFactory;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->testConfigFactory = $this->createMock(TestConfigFactory::class);

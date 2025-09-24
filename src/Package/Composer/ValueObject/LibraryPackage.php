@@ -20,6 +20,7 @@ class LibraryPackage implements PackageInterface
         return new self($path);
     }
 
+    #[\Override]
     public function getType(): string
     {
         return PackageTypes::LIBRARY_TYPE;

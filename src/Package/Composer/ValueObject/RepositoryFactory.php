@@ -49,6 +49,7 @@ class RepositoryFactory
         }
 
         $repositoryClass = self::TYPES[$type];
+
         /** @phpstan-ignore-next-line */
         return new $repositoryClass(
             $url,

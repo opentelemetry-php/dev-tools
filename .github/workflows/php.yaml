@@ -5,10 +5,78 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
-  deploy:
-    uses: opentelemetry-php/gh-workflows/.github/workflows/php.yml@main
-    with:
-      matrix_extension: '["ast, json"]'
+  php:
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.1', '8.2', '8.3', '8.4']
+        experimental: [false]
+
+    env:
+      extensions: ast
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ${{ env.extensions }}
+
+      - name: Validate composer.json
+        run: composer validate
+
+      - name: Install dependencies
+        id: composer
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: |
+          composer --version
+          composer install --prefer-dist --no-progress
+
+      - name: Check Style
+        id: style
+        continue-on-error: ${{ matrix.experimental }}
+        env:
+          PHP_CS_FIXER_IGNORE_ENV: 1
+        run: |
+          vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer --version
+          vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --stop-on-violation --using-cache=no -vvv
+
+      - name: Run Phan
+        id: phan
+        continue-on-error: ${{ matrix.experimental }}
+        env:
+          XDEBUG_MODE: off
+          PHAN_DISABLE_XDEBUG_WARN: 1
+        run: |
+          vendor-bin/phan/vendor/bin/phan --version
+          vendor-bin/phan/vendor/bin/phan
+
+      - name: Run Psalm
+        id: psalm
+        continue-on-error: ${{ matrix.experimental }}
+        run: |
+          vendor-bin/psalm/vendor/bin/psalm --version
+          vendor-bin/psalm/vendor/bin/psalm --output-format=github
+
+      - name: Run Phpstan
+        id: phpstan
+        continue-on-error: ${{ matrix.experimental }}
+        run: |
+          vendor/bin/phpstan --version
+          vendor/bin/phpstan analyse --error-format=github
+
+      - name: Run PHPUnit
+        id: phpunit
+        continue-on-error: ${{ matrix.experimental }}
+        run: |
+          vendor/bin/phpunit --version
+          php -dzend.assertions=1 vendor/bin/phpunit --coverage-text --coverage-clover=coverage.clover

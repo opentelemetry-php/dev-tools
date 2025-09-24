@@ -60,6 +60,7 @@ class PackageAttributeResolverTest extends TestCase
 
     private const COMPOSER_FILE_NAME = 'composer.json';
 
+    #[\Override]
     public function setUp(): void
     {
         $this->setUpVcs();

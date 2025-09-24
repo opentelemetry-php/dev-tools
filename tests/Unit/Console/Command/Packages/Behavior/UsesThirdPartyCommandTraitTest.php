@@ -25,6 +25,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
     private object $instance;
     private Application $application;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->instance = $this->createInstance();
@@ -159,7 +160,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 string $commandClass,
                 InputInterface $input,
                 OutputInterface $output,
-                string $workingDirectory = null
+                ?string $workingDirectory = null
             ): int {
                 return $this->createAndRunCommand(
                     $commandClass,
@@ -173,7 +174,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 Command $command,
                 InputInterface $input,
                 OutputInterface $output,
-                string $workingDirectory = null
+                ?string $workingDirectory = null
             ): int {
                 return $this->runCommand(
                     $command,
@@ -202,6 +203,7 @@ class UsesThirdPartyCommandTraitTest extends TestCase
                 return self::ensureCommandClass($commandClass);
             }
 
+            #[\Override]
             public function getApplication(): Application
             {
                 return $this->application;
@@ -234,6 +236,7 @@ class TestCommand extends Command
         parent::__construct('test/command');
     }
 
+    #[\Override]
     public function run(InputInterface $input, OutputInterface $output): int
     {
         if ($this->throwException) {

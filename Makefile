@@ -7,7 +7,8 @@ PHP_VERSION ?= 8.1
 DC_RUN_PHP = docker compose run --rm php
 PSALM_THREADS ?= 1
 
-all: update style phan psalm phpstan test
+all: update all-checks
+all-checks: style phan psalm phpstan test
 install:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off composer install
 update:
@@ -20,17 +21,15 @@ test-integration:
 test-coverage:
 	$(DC_RUN_PHP) env XDEBUG_MODE=coverage vendor/bin/phpunit --colors=always --testdox --testsuite unit --coverage-html=tests/coverage/html
 phan:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off env PHAN_DISABLE_XDEBUG_WARN=1 vendor/bin/phan
+	$(DC_RUN_PHP) env XDEBUG_MODE=off env PHAN_DISABLE_XDEBUG_WARN=1 vendor-bin/phan/vendor/bin/phan
 psalm:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --threads=${PSALM_THREADS} --no-cache --php-version=${PHP_VERSION}
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor-bin/psalm/vendor/bin/psalm --threads=${PSALM_THREADS} --no-cache --php-version=${PHP_VERSION}
 psalm-info:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/psalm --show-info=true --threads=${PSALM_THREADS}
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor-bin/psalm/vendor/bin/psalm --show-info=true --threads=${PSALM_THREADS}
 phpstan:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpstan analyse --memory-limit=256M
 bash:
 	$(DC_RUN_PHP) bash
 style:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no -vvv
-phpmetrics:
-	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor/bin/phpmetrics --config=./phpmetrics.json --junit=junit.xml
+	$(DC_RUN_PHP) env XDEBUG_MODE=off vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --using-cache=no -vvv
 FORCE:

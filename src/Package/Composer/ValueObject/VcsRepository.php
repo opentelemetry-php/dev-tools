@@ -10,6 +10,7 @@ class VcsRepository implements SingleRepositoryInterface
 {
     use SingleRepositoryTrait;
 
+    #[\Override]
     protected function setType(): void
     {
         $this->type = RepositoryTypes::VCS_TYPE;

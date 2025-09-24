@@ -43,6 +43,7 @@ class MultiRepositoryInfoResolverTest extends TestCase
     ];
     private const ROOT_PATH = 'vfs://root/';
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->setUpVcs();

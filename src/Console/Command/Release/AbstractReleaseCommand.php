@@ -7,16 +7,40 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Release\Commit;
+use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\PullRequest;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\ResponseInterface;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Parser;
 
 abstract class AbstractReleaseCommand extends BaseCommand
 {
+    protected const AVAILABLE_REPOS = [
+        'core'    => 'open-telemetry/opentelemetry-php',
+        'contrib' => 'open-telemetry/opentelemetry-php-contrib',
+    ];
     protected ClientInterface $client;
+    protected Parser $parser;
     protected ?string $token = null;
+    protected array $sources = [];
+
+    #[\Override]
+    protected function interact(InputInterface $input, OutputInterface $output)
+    {
+        if (!$input->getOption('token')) {
+            $token = getenv('GITHUB_TOKEN');
+            if ($token !== false) {
+                $input->setOption('token', $token);
+            }
+        }
+        if (!$input->getOption('token')) {
+            throw new \RuntimeException('No github token provided (via --token or GITHUB_TOKEN env)');
+        }
+    }
 
     protected function headers(): array
     {
@@ -163,5 +187,53 @@ abstract class AbstractReleaseCommand extends BaseCommand
         $this->output->isVerbose() && $this->output->writeln("Found ref: {$ref->ref} SHA: {$ref->object->sha}");
 
         return $ref->object->sha;
+    }
+
+    /**
+     * @throws \Exception
+     * @return array<Repository>
+     */
+    protected function find_repositories(?string $filter = null): array
+    {
+        $repositories = [];
+        foreach ($this->sources as $key => $repo) {
+            $this->output->isVerbose() && $this->output->writeln("<info>Fetching .gitsplit.yaml for {$key} ({$repo})</info>");
+            $repositories = array_merge($repositories, $this->get_gitsplit_repositories($repo, $filter));
+        }
+
+        return $repositories;
+    }
+
+    private function get_gitsplit_repositories(string $repo, ?string $filter): array
+    {
+        $url = "https://raw.githubusercontent.com/{$repo}/main/.gitsplit.yml";
+        $response = $this->fetch($url);
+        if ($response->getStatusCode() !== 200) {
+            throw new \Exception("Error fetching {$url}");
+        }
+
+        $yaml = $this->parser->parse($response->getBody()->getContents());
+        $repositories = [];
+        $this->output->isVeryVerbose() && $this->output->writeln('[RESPONSE]' . json_encode($yaml['splits']));
+        foreach ($yaml['splits'] as $entry) {
+            $prefix = $entry['prefix'];
+            if ($filter && !stripos($prefix, $filter) !== false) {
+                $this->output->isVerbose() && $this->output->writeln(sprintf('[SKIP] %s does not match filter: %s', $prefix, $filter));
+
+                continue;
+            }
+            $repository = new Repository();
+            $repository->upstream = new Project($repo);
+            $repository->upstream->path = $prefix;
+            $target = $entry['target'];
+            $repository->downstream = new Project(str_replace(['https://${GH_TOKEN}@github.com/', '.git'], ['',''], $target));
+            $repositories[] = $repository;
+        }
+
+        if ($this->output->isVeryVerbose()) {
+            $this->output->writeln('[FOUND]' . json_encode($repositories));
+        }
+
+        return $repositories;
     }
 }

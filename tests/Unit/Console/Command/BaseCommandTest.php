@@ -31,6 +31,7 @@ class BaseCommandTest extends TestCase
     private OutputInterface $output;
     private SymfonyStyle $style;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->instance = new ConcreteCommand();

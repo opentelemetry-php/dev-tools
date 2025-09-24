@@ -34,11 +34,13 @@ class ValidatePackagesCommand extends BaseCommand
         $this->commandRunner = $commandRunner ?? CommandRunner::create();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setDescription(self::DESCRIPTION);
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->registerInputAndOutput($input, $output);

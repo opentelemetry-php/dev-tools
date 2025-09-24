@@ -20,6 +20,7 @@ class RepositoryFactoryTest extends AbstractRepositoryTest
     private RepositoryFactory $instance;
     private PackageInterface $package;
 
+    #[\Override]
     public function setUp(): void
     {
         $this->instance = RepositoryFactory::create(
