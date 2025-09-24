@@ -31,6 +31,7 @@ class ValueObjectTraitTest extends TestCase
         return new class() implements ValueObjectInterface {
             use ValueObjectTrait;
 
+            #[\Override]
             public function toArray(): array
             {
                 return ValueObjectTraitTest::ATTRIBUTES;

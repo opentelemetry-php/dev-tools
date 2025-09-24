@@ -16,6 +16,7 @@ use Symfony\Component\Yaml\Parser;
 
 class ReleaseListCommand extends AbstractReleaseCommand
 {
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -27,6 +28,7 @@ class ReleaseListCommand extends AbstractReleaseCommand
         ;
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $stable = $input->getOption('stable');

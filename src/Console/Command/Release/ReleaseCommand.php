@@ -26,6 +26,7 @@ class ReleaseCommand extends AbstractReleaseCommand
     private bool $dry_run;
     private bool $force;
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -39,6 +40,7 @@ class ReleaseCommand extends AbstractReleaseCommand
             ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force new releases even if no changes')
         ;
     }
+    #[\Override]
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         if (!$input->getOption('token')) {
@@ -52,6 +54,7 @@ class ReleaseCommand extends AbstractReleaseCommand
         }
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         assert($output instanceof ConsoleOutputInterface);

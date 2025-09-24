@@ -112,6 +112,7 @@ class TestConfig implements JsonSerializable
         return $config;
     }
 
+    #[\Override]
     #[\ReturnTypeWillChange]
     public function jsonSerialize()
     {

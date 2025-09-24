@@ -19,6 +19,7 @@ class PeclTagCommand extends AbstractReleaseCommand
     private const REPOSITORY = 'open-telemetry/opentelemetry-php-instrumentation';
     private bool $dry_run;
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -33,6 +34,7 @@ class PeclTagCommand extends AbstractReleaseCommand
     /**
      * @psalm-suppress PossiblyNullPropertyFetch
      */
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->token = $input->getOption('token');

@@ -24,6 +24,7 @@ class PeclCommand extends AbstractReleaseCommand
     private const REPO = 'opentelemetry-php-instrumentation';
     private const REPOSITORY = self::OWNER . '/' . self::REPO;
 
+    #[\Override]
     protected function configure(): void
     {
         $this
@@ -33,11 +34,13 @@ class PeclCommand extends AbstractReleaseCommand
         ;
     }
 
+    #[\Override]
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
         //no-op
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $force = $input->getOption('force');

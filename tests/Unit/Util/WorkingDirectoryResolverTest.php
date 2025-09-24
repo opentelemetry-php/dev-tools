@@ -14,6 +14,7 @@ class WorkingDirectoryResolverTest extends TestCase
 {
     private const TEST_WORKING_DIRECTORY = __DIR__ . '/../../../';
 
+    #[\Override]
     public function tearDown(): void
     {
         WorkingDirectoryResolver::setCwdTestResponse(null);

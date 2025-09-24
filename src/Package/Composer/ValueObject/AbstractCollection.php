@@ -12,10 +12,12 @@ abstract class AbstractCollection extends ArrayObject implements CollectionInter
 {
     use ValueObjectTrait;
 
+    #[\Override]
     abstract public function getItemClass(): string;
 
     abstract public static function create($array = [], $flags = 0, $iteratorClass = ArrayIterator::class): AbstractCollection;
 
+    #[\Override]
     public function offsetExists($key): bool
     {
         $this->ensureOffsetType($key);
@@ -23,6 +25,7 @@ abstract class AbstractCollection extends ArrayObject implements CollectionInter
         return parent::offsetExists($key);
     }
 
+    #[\Override]
     public function offsetGet($key): ValueObjectInterface
     {
         $this->ensureOffsetType($key);
@@ -30,6 +33,7 @@ abstract class AbstractCollection extends ArrayObject implements CollectionInter
         return parent::offsetGet($key);
     }
 
+    #[\Override]
     public function offsetSet($key, $value): void
     {
         $this->ensureOffsetType($key);
@@ -38,6 +42,7 @@ abstract class AbstractCollection extends ArrayObject implements CollectionInter
         parent::offsetSet($key, $value);
     }
 
+    #[\Override]
     public function offsetUnset($key): void
     {
         $this->ensureOffsetType($key);
@@ -45,6 +50,7 @@ abstract class AbstractCollection extends ArrayObject implements CollectionInter
         parent::offsetUnset($key);
     }
 
+    #[\Override]
     public function toArray(): array
     {
         $result = [];

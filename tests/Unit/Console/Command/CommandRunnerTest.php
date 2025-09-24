@@ -19,6 +19,7 @@ class CommandRunnerTest extends TestCase
 {
     private CommandRunner $instance;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->instance = CommandRunner::create();

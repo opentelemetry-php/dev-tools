@@ -34,6 +34,7 @@ class RecursiveDirectoryRemoverTest extends TestCase
     private RecursiveDirectoryRemover $remover;
     private vfsStreamDirectory $root;
 
+    #[\Override]
     public function setUp(): void
     {
         $this->remover = RecursiveDirectoryRemover::create();

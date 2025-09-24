@@ -74,6 +74,7 @@ class ValidateInstallationCommand extends BaseCommand
         $this->initWorkingDirectory();
     }
 
+    #[\Override]
     protected function configure(): void
     {
         $this->setDescription(self::DESCRIPTION);
@@ -97,6 +98,7 @@ class ValidateInstallationCommand extends BaseCommand
         );
     }
 
+    #[\Override]
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->registerInputAndOutput($input, $output);

@@ -29,6 +29,7 @@ class ConfigResolverTest extends TestCase
         'C' => 'src/C',
     ];
 
+    #[\Override]
     public function setUp(): void
     {
         $this->setUpVcs();

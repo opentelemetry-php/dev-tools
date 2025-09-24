@@ -21,6 +21,7 @@ class GenericPackage implements PackageInterface
         return new self($name, $type);
     }
 
+    #[\Override]
     public function getType(): string
     {
         return $this->type;

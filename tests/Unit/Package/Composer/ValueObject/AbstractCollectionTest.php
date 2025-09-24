@@ -20,6 +20,7 @@ class AbstractCollectionTest extends TestCase
 
     private const OFFSET_KEY = 'foo';
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->instance = $this->createInstance();
@@ -153,11 +154,13 @@ class AbstractCollectionTest extends TestCase
     private function createInstance(): AbstractCollection
     {
         return new class() extends AbstractCollection {
+            #[\Override]
             public static function create($array = [], $flags = 0, $iteratorClass = ArrayIterator::class): AbstractCollection
             {
                 return new self($array, $flags, $iteratorClass);
             }
 
+            #[\Override]
             public function getItemClass(): string
             {
                 return ValueObjectInterface::class;

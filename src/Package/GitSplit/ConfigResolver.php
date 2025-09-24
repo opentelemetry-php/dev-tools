@@ -25,6 +25,7 @@ class ConfigResolver implements ConfigResolverInterface
         $this->configFile = $configFile ?? $this->getDefaultConfigPath();
     }
 
+    #[\Override]
     public function resolve(): iterable
     {
         $gitSplitConfig = self::parseGitSplitFile($this->configFile);

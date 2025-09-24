@@ -28,6 +28,7 @@ abstract class AbstractReleaseCommand extends BaseCommand
     protected ?string $token = null;
     protected array $sources = [];
 
+    #[\Override]
     protected function interact(InputInterface $input, OutputInterface $output)
     {
         if (!$input->getOption('token')) {

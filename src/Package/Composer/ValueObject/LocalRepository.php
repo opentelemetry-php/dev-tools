@@ -10,6 +10,7 @@ class LocalRepository implements SingleRepositoryInterface
 {
     use SingleRepositoryTrait;
 
+    #[\Override]
     protected function setType(): void
     {
         $this->type = RepositoryTypes::PATH_TYPE;

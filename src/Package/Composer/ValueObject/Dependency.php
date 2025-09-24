@@ -22,16 +22,19 @@ class Dependency implements DependencyInterface
         return new self($getVersionConstraint, $package);
     }
 
+    #[\Override]
     public function getVersionConstraint(): string
     {
         return $this->versionConstraint;
     }
 
+    #[\Override]
     public function getPackage(): PackageInterface
     {
         return $this->package;
     }
 
+    #[\Override]
     public function toArray(): array
     {
         return [

@@ -25,6 +25,7 @@ class DependencyTest extends TestCase
     private Dependency $instance;
     private PackageInterface $package;
 
+    #[\Override]
     public function setUp(): void
     {
         $this->instance = Dependency::create(

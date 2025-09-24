@@ -27,6 +27,7 @@ class TestInstallerTest extends TestCase
     private RecursiveDirectoryRemover $directoryRemover;
     private vfsStreamDirectory $root;
 
+    #[\Override]
     protected function setUp(): void
     {
         $this->root = vfsStream::setup(self::ROOT_DIR);
@@ -39,6 +40,7 @@ class TestInstallerTest extends TestCase
         );
     }
 
+    #[\Override]
     protected function tearDown(): void
     {
         TestInstaller::setDirectoryRemover(null);
