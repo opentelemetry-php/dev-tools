@@ -7,7 +7,6 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 use Nyholm\Psr7\Request;
 use OpenTelemetry\DevTools\Console\Command\BaseCommand;
 use OpenTelemetry\DevTools\Console\Release\Commit;
-use OpenTelemetry\DevTools\Console\Release\Filter;
 use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\PullRequest;
 use OpenTelemetry\DevTools\Console\Release\Release;

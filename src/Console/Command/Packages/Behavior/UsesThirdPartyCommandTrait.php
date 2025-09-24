@@ -28,7 +28,7 @@ trait UsesThirdPartyCommandTrait
         string $commandClass,
         InputInterface $input,
         OutputInterface $output,
-        string $workingDirectory = null
+        ?string $workingDirectory = null
     ): int {
         return $this->runCommand(
             $this->createCommand($commandClass),
@@ -42,7 +42,7 @@ trait UsesThirdPartyCommandTrait
         Command $command,
         InputInterface $input,
         OutputInterface $output,
-        string $workingDirectory = null
+        ?string $workingDirectory = null
     ): int {
         $oldWorkingDir = WorkingDirectoryResolver::create()->resolve();
 

@@ -7,7 +7,6 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 use Http\Discovery\Psr18ClientDiscovery;
 use OpenTelemetry\DevTools\Console\Release\Commit;
 use OpenTelemetry\DevTools\Console\Release\Diff;
-use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
 use Symfony\Component\Console\Command\Command;
@@ -99,7 +98,6 @@ class ReleaseCommand extends AbstractReleaseCommand
                 $repositories[] = $repository;
             }
             $bar->advance();
-
         }
         $bar->finish();
         $this->publish_repositories($repositories);
@@ -151,7 +149,7 @@ class ReleaseCommand extends AbstractReleaseCommand
 
         $differences = array_diff($diffCommits, $foundCommits);
         if (count($differences) !== 0) {
-            $this->output->writeln('<comment>⚠️  Warning: The following commits are present downstream but not found upstream:</comment>');
+            $this->output->writeln('<comment>Warning: The following commits are present downstream but not found upstream:</comment>');
             foreach ($differences as $diff) {
                 $this->output->writeln('<comment>  • ' . $diff . '</comment>');
             }
@@ -159,6 +157,7 @@ class ReleaseCommand extends AbstractReleaseCommand
 
             $helper = new QuestionHelper();
             $question = new ConfirmationQuestion('<question>Do you want to continue despite these differences? (y/N):</question> ', false);
+
             return $helper->ask($this->input, $this->output, $question);
         }
 

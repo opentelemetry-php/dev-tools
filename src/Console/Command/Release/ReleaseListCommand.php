@@ -5,21 +5,13 @@ declare(strict_types=1);
 namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use Http\Discovery\Psr18ClientDiscovery;
-use OpenTelemetry\DevTools\Console\Release\Commit;
-use OpenTelemetry\DevTools\Console\Release\Diff;
-use OpenTelemetry\DevTools\Console\Release\Filter;
-use OpenTelemetry\DevTools\Console\Release\Project;
 use OpenTelemetry\DevTools\Console\Release\Release;
-use OpenTelemetry\DevTools\Console\Release\Repository;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\ProgressBar;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Helper\Table;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\ConfirmationQuestion;
-use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Yaml\Parser;
 
 class ReleaseListCommand extends AbstractReleaseCommand
@@ -68,7 +60,7 @@ class ReleaseListCommand extends AbstractReleaseCommand
             $repository->latestRelease = $this->get_latest_release($repository);
             $bar->advance();
             if ($this->show($repository->latestRelease, $unstable, $stable)) {
-                $table->addRow([$repository->downstream->project, $repository->latestRelease->version]);
+                $table->addRow([$repository->downstream->project, $repository->latestRelease->version ?? 'none']);
             }
         }
         $bar->finish();
@@ -77,14 +69,18 @@ class ReleaseListCommand extends AbstractReleaseCommand
         return Command::SUCCESS;
     }
 
-    private function show(Release $release, ?bool $unstable, ?bool $stable): bool
+    private function show(?Release $release, ?bool $unstable, ?bool $stable): bool
     {
+        if (!$release || !$release->version) {
+            return true;
+        }
         if ($unstable === false && $stable === false) {
             return true;
-        };
+        }
         if ($stable) {
             return version_compare($release->version, '1.0.0', 'ge');
         }
+
         return version_compare($release->version, '1.0.0', 'lt');
     }
 }

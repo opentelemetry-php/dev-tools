@@ -20,7 +20,7 @@ class ConfigResolver implements ConfigResolverInterface
 
     private string $configFile;
 
-    public function __construct(string $configFile = null)
+    public function __construct(?string $configFile = null)
     {
         $this->configFile = $configFile ?? $this->getDefaultConfigPath();
     }

@@ -265,7 +265,7 @@ class ValidateInstallationCommand extends BaseCommand
             : null;
     }
 
-    private function runUpdateCommand(string $workingDirectory = null): int
+    private function runUpdateCommand(?string $workingDirectory = null): int
     {
         return $this->createAndRunCommand(
             UpdateCommand::class,

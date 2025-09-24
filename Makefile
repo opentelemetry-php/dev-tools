@@ -7,7 +7,8 @@ PHP_VERSION ?= 8.1
 DC_RUN_PHP = docker compose run --rm php
 PSALM_THREADS ?= 1
 
-all: update style phan psalm phpstan test
+all: update all-checks
+all-checks: style phan psalm phpstan test
 install:
 	$(DC_RUN_PHP) env XDEBUG_MODE=off composer install
 update:
