@@ -47,8 +47,8 @@ jobs:
         env:
           PHP_CS_FIXER_IGNORE_ENV: 1
         run: |
-          vendor/php-cs-fixer/vendor/bin/php-cs-fixer --version
-          vendor/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --stop-on-violation --using-cache=no -vvv
+          vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer --version
+          vendor-bin/php-cs-fixer/vendor/bin/php-cs-fixer fix --config=.php-cs-fixer.php --dry-run --stop-on-violation --using-cache=no -vvv
 
       - name: Run Phan
         id: phan
@@ -57,15 +57,15 @@ jobs:
           XDEBUG_MODE: off
           PHAN_DISABLE_XDEBUG_WARN: 1
         run: |
-          vendor/phan/vendor/bin/phan --version
-          vendor/phan/vendor/bin/phan
+          vendor-bin/phan/vendor/bin/phan --version
+          vendor-bin/phan/vendor/bin/phan
 
       - name: Run Psalm
         id: psalm
         continue-on-error: ${{ matrix.experimental }}
         run: |
-          vendor/psalm/vendor/bin/psalm --version
-          vendor/psalm/vendor/bin/psalm --output-format=github
+          vendor-bin/psalm/vendor/bin/psalm --version
+          vendor-bin/psalm/vendor/bin/psalm --output-format=github
 
       - name: Run Phpstan
         id: phpstan
