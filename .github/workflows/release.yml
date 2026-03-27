@@ -1,0 +1,66 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type (auto = detect from conventional commits)'
+        required: true
+        type: choice
+        default: auto
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      repo:
+        description: 'Upstream repository to release (empty = all)'
+        required: false
+        type: choice
+        default: ''
+        options:
+          - ''
+          - core
+          - contrib
+      filter:
+        description: 'Filter downstream repositories by prefix'
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  release:
+    name: Create releases
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: json, simplexml
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          ARGS="--non-interactive"
+          if [ "${{ inputs.version_bump }}" != "auto" ]; then
+            ARGS="$ARGS --version-bump=${{ inputs.version_bump }}"
+          fi
+          if [ -n "${{ inputs.repo }}" ]; then
+            ARGS="$ARGS --repo=${{ inputs.repo }}"
+          fi
+          if [ -n "${{ inputs.filter }}" ]; then
+            ARGS="$ARGS --filter=${{ inputs.filter }}"
+          fi
+          bin/otel release:run $ARGS

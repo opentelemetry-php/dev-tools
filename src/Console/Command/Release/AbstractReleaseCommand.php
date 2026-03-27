@@ -73,6 +73,15 @@ abstract class AbstractReleaseCommand extends BaseCommand
         return $this->client->sendRequest($request);
     }
 
+    protected function put(string $url, string $body): ResponseInterface
+    {
+        $request = new Request('PUT', $url, $this->headers(), $body);
+        $this->output->isVerbose() && $this->output->writeln("[HTTP] PUT {$url}");
+        $this->output->isVeryVerbose() && $this->output->writeln("[HTTP body] {$body}");
+
+        return $this->client->sendRequest($request);
+    }
+
     protected function get_latest_release(Repository $repository): ?Release
     {
         $release_url = "https://api.github.com/repos/{$repository->downstream}/releases/latest";

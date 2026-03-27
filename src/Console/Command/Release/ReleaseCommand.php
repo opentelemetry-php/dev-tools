@@ -6,6 +6,7 @@ namespace OpenTelemetry\DevTools\Console\Command\Release;
 
 use Http\Discovery\Psr18ClientDiscovery;
 use OpenTelemetry\DevTools\Console\Release\Commit;
+use OpenTelemetry\DevTools\Console\Release\ConventionalCommitVersionDetector;
 use OpenTelemetry\DevTools\Console\Release\Diff;
 use OpenTelemetry\DevTools\Console\Release\Release;
 use OpenTelemetry\DevTools\Console\Release\Repository;
@@ -25,6 +26,8 @@ class ReleaseCommand extends AbstractReleaseCommand
     private string $source_branch;
     private bool $dry_run;
     private bool $force;
+    private bool $non_interactive = false;
+    private ?string $version_bump = null;
 
     #[\Override]
     protected function configure(): void
@@ -38,6 +41,9 @@ class ReleaseCommand extends AbstractReleaseCommand
             ->addOption('repo', ['r'], InputOption::VALUE_OPTIONAL, 'repo to handle (core, contrib)')
             ->addOption('filter', null, InputOption::VALUE_OPTIONAL, 'filter by repository prefix')
             ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force new releases even if no changes')
+            ->addOption('non-interactive', null, InputOption::VALUE_NONE, 'suppress all prompts; auto-detect version from conventional commits')
+            ->addOption('version-bump', null, InputOption::VALUE_OPTIONAL, 'version bump type: patch, minor, major (implies --non-interactive)')
+            ->addOption('draft', null, InputOption::VALUE_NONE, 'create releases as drafts (non-interactive mode)')
         ;
     }
     #[\Override]
@@ -62,6 +68,8 @@ class ReleaseCommand extends AbstractReleaseCommand
         $this->source_branch = $input->getOption('branch') ?? 'main';
         $this->dry_run = $input->getOption('dry-run');
         $this->force = $input->getOption('force');
+        $this->version_bump = $input->getOption('version-bump');
+        $this->non_interactive = $input->getOption('non-interactive') || $this->version_bump !== null;
         $source = $input->getOption('repo');
         $filter = $input->getOption('filter');
         if ($source && !array_key_exists($source, self::AVAILABLE_REPOS)) {
@@ -158,6 +166,12 @@ class ReleaseCommand extends AbstractReleaseCommand
             }
             $this->output->writeln('<comment>Please review these differences before continuing.</comment>');
 
+            if ($this->non_interactive) {
+                $this->output->writeln('<comment>[NON-INTERACTIVE] Continuing despite differences.</comment>');
+
+                return true;
+            }
+
             $helper = new QuestionHelper();
             $question = new ConfirmationQuestion('<question>Do you want to continue despite these differences? (y/N):</question> ', false);
 
@@ -225,20 +239,29 @@ class ReleaseCommand extends AbstractReleaseCommand
         $prev = ($repository->latestRelease === null)
             ? '-nothing-'
             : $repository->latestRelease->version;
-        $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
 
-        $helper = new QuestionHelper();
-        $newVersion = $helper->ask($this->input, $this->output, $question);
-        if (!$newVersion) {
-            $this->output->writeln("<info>[SKIP] not going to release {$repository->downstream}</info>");
+        if ($this->non_interactive) {
+            $bumpType = $this->version_bump ?? (new ConventionalCommitVersionDetector())->detect($repository->commits);
+            $currentVersion = $repository->latestRelease?->version ?? '0.0.0';
+            $newVersion = $this->bump_version($currentVersion, $bumpType);
+            $this->output->writeln("<info>[AUTO] {$repository->downstream}: {$bumpType} bump {$currentVersion} -> {$newVersion}</info>");
+            $makeLatest = true;
+            $isDraft = $this->input->getOption('draft');
+        } else {
+            $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
+            $helper = new QuestionHelper();
+            $newVersion = $helper->ask($this->input, $this->output, $question);
+            if (!$newVersion) {
+                $this->output->writeln("<info>[SKIP] not going to release {$repository->downstream}</info>");
 
-            return;
+                return;
+            }
+            $question = new ConfirmationQuestion('<question>Make this the latest release (Y/n)?</question>', true);
+            $makeLatest = $helper->ask($this->input, $this->output, $question);
+            $question = new ConfirmationQuestion('<question>Make this release a draft (y/N)?</question>', false);
+            $isDraft = $helper->ask($this->input, $this->output, $question);
         }
         $release->version = $newVersion;
-        $question = new ConfirmationQuestion('<question>Make this the latest release (Y/n)?</question>', true);
-        $makeLatest = $helper->ask($this->input, $this->output, $question);
-        $question = new ConfirmationQuestion('<question>Make this release a draft (y/N)?</question>', false);
-        $isDraft = $helper->ask($this->input, $this->output, $question);
         $notes = [];
         if ($repository->latestRelease === null) {
             $notes[] = 'Initial release';
@@ -253,6 +276,21 @@ class ReleaseCommand extends AbstractReleaseCommand
         $release->notes = implode(PHP_EOL, $notes);
 
         $this->do_release($repository, $release, $makeLatest, $isDraft);
+    }
+
+    private function bump_version(string $current, string $type): string
+    {
+        $prefix = str_starts_with($current, 'v') ? 'v' : '';
+        $version = ltrim($current, 'v');
+        [$major, $minor, $patch] = array_map('intval', explode('.', $version . '.0.0'));
+
+        match ($type) {
+            ConventionalCommitVersionDetector::BUMP_MAJOR => [$major, $minor, $patch] = [$major + 1, 0, 0],
+            ConventionalCommitVersionDetector::BUMP_MINOR => [$major, $minor, $patch] = [$major, $minor + 1, 0],
+            default => [$major, $minor, $patch] = [$major, $minor, $patch + 1],
+        };
+
+        return "{$prefix}{$major}.{$minor}.{$patch}";
     }
 
     private function do_release(Repository $repository, Release $release, bool $makeLatest, bool $isDraft)

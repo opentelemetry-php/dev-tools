@@ -31,6 +31,10 @@ class PeclCommand extends AbstractReleaseCommand
             ->setName('release:pecl')
             ->setDescription('Update auto-instrumentation package.xml for PECL release')
             ->addOption('force', ['f'], InputOption::VALUE_NONE, 'force')
+            ->addOption('version', null, InputOption::VALUE_OPTIONAL, 'new version (skips prompt)')
+            ->addOption('stability', null, InputOption::VALUE_OPTIONAL, 'release stability: stable|beta (skips prompt)', null)
+            ->addOption('output-file', null, InputOption::VALUE_OPTIONAL, 'write updated package.xml to this file path instead of stdout')
+            ->addOption('update-header', null, InputOption::VALUE_OPTIONAL, 'path to local php_opentelemetry.h to update PHP_OPENTELEMETRY_VERSION')
         ;
     }
 
@@ -80,7 +84,7 @@ class PeclCommand extends AbstractReleaseCommand
     /**
      * @psalm-suppress PossiblyNullPropertyFetch
      */
-    private function process(Repository $repository, SimpleXMLElement $xml): void
+    protected function process(Repository $repository, SimpleXMLElement $xml): void
     {
         $cnt = count($repository->commits);
         $this->output->writeln("<info>Last release {$repository->latestRelease->version} @ {$repository->latestRelease->timestamp}</info>");
@@ -91,22 +95,28 @@ class PeclCommand extends AbstractReleaseCommand
         $prev = ($repository->latestRelease === null)
             ? '-nothing-'
             : $repository->latestRelease->version;
-        $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
 
         $helper = new QuestionHelper();
-        $newVersion = $helper->ask($this->input, $this->output, $question);
+        $newVersion = $this->input->getOption('version');
+        if (!$newVersion) {
+            $question = new Question("<question>Latest={$prev}, enter new tag (blank to skip):</question>", null);
+            $newVersion = $helper->ask($this->input, $this->output, $question);
+        }
         if (!$newVersion) {
             $this->output->writeln("<info>[SKIP] not going to release {$repository->downstream}</info>");
 
             return;
         }
 
-        $question = new ChoiceQuestion(
-            '<question>Is this a beta or stable release?</question>',
-            ['stable', 'beta'],
-            'stable',
-        );
-        $stability = $helper->ask($this->input, $this->output, $question);
+        $stability = $this->input->getOption('stability');
+        if (!$stability) {
+            $question = new ChoiceQuestion(
+                '<question>Is this a beta or stable release?</question>',
+                ['stable', 'beta'],
+                'stable',
+            );
+            $stability = $helper->ask($this->input, $this->output, $question);
+        }
 
         //new release data
         $release = [
@@ -122,7 +132,20 @@ class PeclCommand extends AbstractReleaseCommand
             ],
             'notes' => $this->format_notes($newVersion),
         ];
-        $this->output->writeln($this->convertPackageXml($xml, $release));
+        $xmlContent = $this->convertPackageXml($xml, $release);
+
+        $outputFile = $this->input->getOption('output-file');
+        if ($outputFile) {
+            file_put_contents($outputFile, $xmlContent);
+            $this->output->writeln("<info>[WRITTEN] package.xml -> {$outputFile}</info>");
+        } else {
+            $this->output->writeln($xmlContent);
+        }
+
+        $headerFile = $this->input->getOption('update-header');
+        if ($headerFile) {
+            $this->update_header_file($headerFile, $newVersion);
+        }
     }
 
     protected function convertPackageXml(SimpleXMLElement $xml, array $new): string
@@ -158,7 +181,29 @@ class PeclCommand extends AbstractReleaseCommand
         return $pretty->saveXML();
     }
 
-    private function format_notes(string $version): string
+    private function update_header_file(string $path, string $version): void
+    {
+        if (!file_exists($path)) {
+            $this->output->writeln("<error>[ERROR] Header file not found: {$path}</error>");
+
+            return;
+        }
+        $contents = file_get_contents($path);
+        $updated = preg_replace(
+            '/(#define PHP_OPENTELEMETRY_VERSION ")[^"]+(")/m',
+            '${1}' . $version . '${2}',
+            $contents,
+        );
+        if ($updated === $contents) {
+            $this->output->writeln('<comment>[WARN] PHP_OPENTELEMETRY_VERSION define not found in header file</comment>');
+
+            return;
+        }
+        file_put_contents($path, $updated);
+        $this->output->writeln("<info>[UPDATED] PHP_OPENTELEMETRY_VERSION -> {$version} in {$path}</info>");
+    }
+
+    protected function format_notes(string $version): string
     {
         return sprintf('See https://github.com/%s/%s/releases/tag/%s', self::OWNER, self::REPO, $version);
     }
