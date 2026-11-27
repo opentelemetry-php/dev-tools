@@ -60,6 +60,7 @@ class ReleasePrCommand extends AbstractReleaseCommand
             ->addOption('date', null, InputOption::VALUE_REQUIRED, 'release date, YYYY-MM-DD (default: today in UTC)')
             ->addOption('rebuild-only', null, InputOption::VALUE_NONE, 'rebuild the pull request if it is open, and its description has overrides it was not built with or main has moved since it was built, as after an edit')
             ->addOption('sender', null, InputOption::VALUE_REQUIRED, 'the user who asked for the pull request, who needs write access to the monorepo')
+            ->addOption('tags-on-merge', null, InputOption::VALUE_NONE, 'the monorepo tags the release once it is merged, so the description says so rather than how to tag it by hand')
         ;
     }
 
@@ -159,7 +160,7 @@ class ReleasePrCommand extends AbstractReleaseCommand
             || !$this->git->sameTree($path, $lease, $commit)
             || $built?->trailers() !== $build->trailers();
 
-        $description = (new ReleaseDescription($repository, $sha, $repository === self::AVAILABLE_REPOS['core']))
+        $description = (new ReleaseDescription($repository, $sha, $repository === self::AVAILABLE_REPOS['core'], (bool) $input->getOption('tags-on-merge')))
             ->render($prep['markdown'], $prep, $previous, $overrides);
         //the stale job may have run for a push to main during this build, and seen the old build
         if ($this->branch_tip($repository) !== $sha) {

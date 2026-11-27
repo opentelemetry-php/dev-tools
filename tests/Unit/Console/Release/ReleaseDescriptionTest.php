@@ -180,6 +180,23 @@ class ReleaseDescriptionTest extends TestCase
         $this->assertStringStartsWith('Releases [open-telemetry/opentelemetry-php-contrib](https://github.com/open-telemetry/opentelemetry-php-contrib) from `main` at [841cc9a](https://github.com/open-telemetry/opentelemetry-php-contrib/commit/' . self::SHA . ").\n", $body);
     }
 
+    public function test_a_monorepo_that_tags_on_merge_says_so(): void
+    {
+        $body = (new ReleaseDescription('open-telemetry/opentelemetry-php', self::SHA, true, true))
+            ->render(self::MARKDOWN, self::prep(), '', new Overrides());
+
+        $this->assertStringEndsWith(<<<'MD'
+            ```
+
+            ### What happens when you merge
+
+            gitsplit pushes each package to its split repository. The same run then comments on this pull
+            request with the versions it will tag, and tags them once a maintainer approves. See
+            [Merge and tag](https://github.com/open-telemetry/opentelemetry-php/blob/main/RELEASING.md#merge-and-tag).
+
+            MD, $body);
+    }
+
     public function test_unmarked_drops_the_stale_note_and_the_blank_line_after_it(): void
     {
         $body = ReleaseDescription::STALE . "\r\n\r\nReleases x.\r\n\r\nMore.\r\n\r\n";

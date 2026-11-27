@@ -491,6 +491,10 @@ unchanged.
 If main moved while the command ran, the new description starts with the stale note, as
 [release:pr:stale](#mark-the-pull-request-stale) may have run for that push and seen the old build.
 
+The description ends with what happens on merge. By default, that is to tag the packages by hand
+with [release:run](#tag-a-release). Pass `--tags-on-merge` when the monorepo's split workflow tags
+them itself once a maintainer approves.
+
 ### Record the build in the commit
 
 The commit message ends with trailers that record what the commit was built from:

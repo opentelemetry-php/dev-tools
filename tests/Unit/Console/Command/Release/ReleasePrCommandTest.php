@@ -492,6 +492,13 @@ class ReleasePrCommandTest extends TestCase
         $this->assertStringContainsString('Then rebuild it.', $this->sent('POST', 'https://api.github.com/repos/open-telemetry/opentelemetry-php-contrib/pulls')['body'] ?? '');
     }
 
+    public function test_tags_on_merge_says_the_merge_tags_the_release(): void
+    {
+        $this->assertSame(Command::SUCCESS, $this->run_command(['--tags-on-merge' => true]));
+
+        $this->assertSame((new ReleaseDescription(self::REPO, self::SHA, true, true))->render($this->prep['markdown'], $this->prep, '', new Overrides()), $this->sent('POST', self::API . '/pulls')['body'] ?? null);
+    }
+
     public function test_the_repository_must_be_a_monorepo(): void
     {
         $this->assertSame(Command::FAILURE, $this->run_command(['--repository' => 'someone/else']));
