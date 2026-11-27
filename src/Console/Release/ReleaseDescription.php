@@ -50,16 +50,27 @@ final class ReleaseDescription
         gitsplit pushes each package to its split repository. Then tag the packages in the order above
         with [release:run](https://github.com/opentelemetry-php/dev-tools#tag-a-release).
         MD . "\n";
+    private const MERGE_TAGS = <<<'MD'
+
+        ### What happens when you merge
+
+        gitsplit pushes each package to its split repository. The same run then comments on this pull
+        request with the versions it will tag, and tags them once a maintainer approves. See
+        [Merge and tag](https://github.com/open-telemetry/opentelemetry-php/blob/main/RELEASING.md#merge-and-tag).
+        MD . "\n";
 
     /**
      * @param string $repository the monorepo, `org/project`
      * @param bool $rebuildsOnEdit whether saving an edit to the description rebuilds the pull
      *        request. Edits to contrib's start no workflow, as the workflow is in core.
+     * @param bool $tagsOnMerge whether the monorepo's gitsplit workflow tags the release, rather
+     *        than a maintainer with release:run
      */
     public function __construct(
         private readonly string $repository,
         private readonly string $sha,
         private readonly bool $rebuildsOnEdit,
+        private readonly bool $tagsOnMerge = false,
     ) {
     }
 
@@ -89,7 +100,7 @@ final class ReleaseDescription
         $body .= ($this->rebuildsOnEdit ? 'Saving rebuilds the pull request with them.' : 'Then rebuild it.') . "\n\n";
         $body .= Overrides::FENCE . "\n" . implode('', array_map(static fn (string $line): string => "{$line}\n", $overrides->lines)) . "```\n";
 
-        return $body . self::MERGE;
+        return $body . ($this->tagsOnMerge ? self::MERGE_TAGS : self::MERGE);
     }
 
     /**
